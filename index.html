@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>과학 탐구 분석 도구</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* 시원한 파스텔 톤 팔레트 */
+  --bg-top:#E0F2FE;        /* 하늘색 파스텔 */
+  --bg-mid:#DDEEFE;        /* 연한 하늘 */
+  --bg-bottom:#E8E4F8;     /* 라벤더 파스텔 */
+  --card-bg:rgba(255,255,255,0.85);
+
+  --primary:#5B8DEF;       /* 부드러운 파랑 */
+  --primary2:#7BA8F5;
+  --mint:#5EC9B5;          /* 민트 */
+  --mint2:#7DD8C6;
+  --lavender:#A78BD8;      /* 라벤더 */
+  --lavender2:#C0A8E5;
+  --peach:#F5A38C;         /* 피치 */
+  --peach2:#F8BBA8;
+  --lemon:#F5CE5E;         /* 레몬 */
+  --lemon2:#F8DC85;
+  --rose:#F08CA3;          /* 로즈 */
+  --rose2:#F5A8BA;
+  --sky:#7BC8E5;           /* 스카이 */
+  --sky2:#9AD5EC;
+  --sage:#9ACB87;          /* 세이지 그린 */
+  --sage2:#B5D9A5;
+
+  --ink:#2D3D5C;           /* 진한 텍스트 */
+  --ink2:#3F5478;
+  --slate:#5A6B85;         /* 보조 텍스트 */
+  --fog:#8A99B0;           /* 회색 */
+  --cream:#FDFCFA;
+
+  --success:#5BAE7F;
+  --warn:#E89B5E;
+  --danger:#E07880;
+
+  --shadow:0 4px 20px rgba(91,141,239,0.12);
+  --shadow-lg:0 8px 28px rgba(91,141,239,0.18);
+  --radius:18px;
+  --radius-sm:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'Noto Sans KR',sans-serif;background:#E0F2FE;color:var(--ink);min-height:100vh;overflow-x:hidden;font-size:15px;line-height:1.6;}
+
+.bg-wrap{position:fixed;inset:0;z-index:0;background:linear-gradient(160deg,var(--bg-top) 0%,var(--bg-mid) 45%,var(--bg-bottom) 100%);}
+.bg-wrap::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 15% 15%,rgba(167,139,216,.18) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 85% 85%,rgba(94,201,181,.14) 0%,transparent 60%);}
+
+/* 떠다니는 거품 효과 */
+.bubbles{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.bubble{position:absolute;bottom:-30px;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.7),rgba(255,255,255,0.2));border-radius:50%;animation:float linear infinite;}
+@keyframes float{0%{transform:translateY(0) translateX(0);opacity:.5;}50%{opacity:.7;}100%{transform:translateY(-110vh) translateX(20px);opacity:0;}}
+
+#app{position:relative;z-index:10;max-width:480px;margin:0 auto;min-height:100vh;padding-bottom:50px;}
+
+/* ── HEADER ── */
+.app-header{text-align:center;padding:32px 20px 18px;}
+.app-header .logo{font-size:2.8rem;display:block;margin-bottom:6px;}
+.app-header h1{font-family:'Jua',sans-serif;font-size:1.55rem;color:var(--ink);line-height:1.3;}
+.app-header .sub{font-size:.82rem;color:var(--slate);margin-top:6px;letter-spacing:.02em;}
+
+/* ── CARD (일반) ── */
+.card{background:var(--card-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:var(--radius);border:1px solid rgba(255,255,255,.7);box-shadow:var(--shadow);padding:20px;margin:0 16px 16px;color:var(--ink);}
+.card-title{font-family:'Jua',sans-serif;font-size:1.05rem;color:var(--ink);margin-bottom:6px;}
+.card-desc{font-size:.85rem;color:var(--slate);line-height:1.7;}
+
+/* ── HOME GRID 2열 4행 ── */
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 14px 12px;}
+.home-card{background:var(--card-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:var(--radius);border:1px solid rgba(255,255,255,.65);box-shadow:var(--shadow);padding:16px 14px 18px;cursor:pointer;position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s;-webkit-tap-highlight-color:transparent;user-select:none;min-height:175px;display:flex;flex-direction:column;}
+.home-card:active{transform:scale(.97);box-shadow:0 2px 10px rgba(91,141,239,.1);}
+.home-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;border-radius:var(--radius) var(--radius) 0 0;}
+.home-card.t-light::before{background:linear-gradient(90deg,var(--lemon),var(--lemon2));}
+.home-card.t-press::before{background:linear-gradient(90deg,var(--sky),var(--sky2));}
+.home-card.t-pend::before{background:linear-gradient(90deg,var(--mint),var(--mint2));}
+.home-card.t-motion::before{background:linear-gradient(90deg,var(--sage),var(--sage2));}
+.home-card.t-sound::before{background:linear-gradient(90deg,var(--lavender),var(--lavender2));}
+.home-card.t-color::before{background:linear-gradient(90deg,var(--peach),var(--peach2));}
+.home-card.t-pulse::before{background:linear-gradient(90deg,var(--rose),var(--rose2));}
+.home-card.t-react::before{background:linear-gradient(90deg,var(--primary),var(--primary2));}
+
+.home-card .hc-icon{font-size:1.9rem;display:block;margin:6px 0 7px;}
+.home-card .hc-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:5px;letter-spacing:.04em;align-self:flex-start;}
+.home-card.t-light .hc-badge{background:rgba(245,206,94,.2);color:#A07E2E;}
+.home-card.t-press .hc-badge{background:rgba(123,200,229,.22);color:#2B7A99;}
+.home-card.t-pend .hc-badge{background:rgba(94,201,181,.2);color:#2C8275;}
+.home-card.t-motion .hc-badge{background:rgba(154,203,135,.22);color:#3F7530;}
+.home-card.t-sound .hc-badge{background:rgba(167,139,216,.22);color:#5A4288;}
+.home-card.t-color .hc-badge{background:rgba(245,163,140,.22);color:#A24F35;}
+.home-card.t-pulse .hc-badge{background:rgba(240,140,163,.22);color:#A23E5A;}
+.home-card.t-react .hc-badge{background:rgba(91,141,239,.18);color:#3A5DA8;}
+
+.home-card .hc-title{font-family:'Jua',sans-serif;font-size:.92rem;color:var(--ink);line-height:1.3;margin-bottom:4px;}
+.home-card .hc-desc{font-size:.7rem;color:var(--slate);line-height:1.5;}
+
+/* ── SCREEN ── */
+.screen{display:none;} .screen.active{display:block;}
+
+/* ── STEP HEADER ── */
+.step-header{padding:16px 16px 8px;display:flex;align-items:center;gap:12px;}
+.back-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.85);border:1px solid rgba(91,141,239,.18);color:var(--ink);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;flex-shrink:0;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 6px rgba(91,141,239,.1);}
+.back-btn:active{background:rgba(255,255,255,1);}
+.step-info{flex:1;}
+.step-title{font-family:'Jua',sans-serif;font-size:1rem;color:var(--ink);line-height:1.3;}
+.step-sub{font-size:.72rem;color:var(--slate);margin-top:2px;}
+.progress{display:flex;justify-content:center;gap:8px;padding:0 16px 12px;}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(91,141,239,.18);transition:all .3s;}
+.dot.active{background:var(--primary);transform:scale(1.3);}
+.dot.done{background:rgba(91,141,239,.5);}
+
+/* ── BUTTONS ── */
+.btn{display:block;width:100%;padding:13px 20px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:.9rem;font-weight:700;text-align:center;transition:all .2s;-webkit-tap-highlight-color:transparent;letter-spacing:.01em;}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 4px 14px rgba(91,141,239,.3);}
+.btn-primary:active{transform:scale(.98);}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;}
+.btn-lemon{background:linear-gradient(135deg,#F0BD3F,var(--lemon));color:#7A5A20;box-shadow:0 4px 14px rgba(245,206,94,.35);}
+.btn-lemon:disabled{opacity:.45;cursor:not-allowed;}
+.btn-sky{background:linear-gradient(135deg,#5BB4D8,var(--sky));color:#fff;box-shadow:0 4px 14px rgba(123,200,229,.3);}
+.btn-sky:disabled{opacity:.45;cursor:not-allowed;}
+.btn-mint{background:linear-gradient(135deg,#3FB8A0,var(--mint));color:#fff;box-shadow:0 4px 14px rgba(94,201,181,.3);}
+.btn-mint:disabled{opacity:.45;cursor:not-allowed;}
+.btn-sage{background:linear-gradient(135deg,#7DBA68,var(--sage));color:#fff;box-shadow:0 4px 14px rgba(154,203,135,.3);}
+.btn-sage:disabled{opacity:.45;cursor:not-allowed;}
+.btn-lavender{background:linear-gradient(135deg,#8C70C8,var(--lavender));color:#fff;box-shadow:0 4px 14px rgba(167,139,216,.3);}
+.btn-lavender:disabled{opacity:.45;cursor:not-allowed;}
+.btn-peach{background:linear-gradient(135deg,#EF8A6E,var(--peach));color:#fff;box-shadow:0 4px 14px rgba(245,163,140,.3);}
+.btn-peach:disabled{opacity:.45;cursor:not-allowed;}
+.btn-rose{background:linear-gradient(135deg,#E07391,var(--rose));color:#fff;box-shadow:0 4px 14px rgba(240,140,163,.3);}
+.btn-rose:disabled{opacity:.45;cursor:not-allowed;}
+.btn-secondary{background:rgba(255,255,255,.8);color:var(--slate);border:1.5px solid rgba(91,141,239,.18);}
+.btn-mt{margin-top:10px;}
+
+/* ── INPUTS ── */
+.input-group{margin-bottom:14px;}
+.input-label{display:block;font-size:.78rem;font-weight:700;color:var(--ink2);margin-bottom:5px;}
+.inp{width:100%;padding:11px 14px;border-radius:var(--radius-sm);border:1.5px solid rgba(91,141,239,.18);background:rgba(255,255,255,.85);font-family:'Noto Sans KR',sans-serif;font-size:.88rem;color:var(--ink);outline:none;transition:all .2s;}
+.inp:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(91,141,239,.15);}
+.inp::-webkit-inner-spin-button,.inp::-webkit-outer-spin-button{-webkit-appearance:none;}
+.inp{-moz-appearance:textfield;}
+
+/* ── OPTION CARDS ── */
+.option-cards{display:flex;gap:10px;margin-bottom:16px;}
+.option-card{flex:1;cursor:pointer;padding:14px 10px;border-radius:var(--radius-sm);border:2px solid rgba(91,141,239,.15);background:rgba(255,255,255,.6);text-align:center;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.option-card .oc-icon{font-size:1.4rem;display:block;margin-bottom:5px;}
+.option-card .oc-label{font-size:.78rem;font-weight:700;color:var(--slate);}
+.option-card.selected{border-color:var(--primary);background:rgba(91,141,239,.08);box-shadow:0 3px 10px rgba(91,141,239,.15);}
+.option-card.selected .oc-label{color:var(--primary);}
+
+/* ── PHOTO METHOD TOGGLE ── */
+.photo-method-toggle{display:flex;gap:8px;margin-bottom:14px;}
+.pm-btn{flex:1;padding:9px 12px;font-size:.78rem;border-radius:8px;border:1.5px solid rgba(91,141,239,.18);background:rgba(255,255,255,.7);color:var(--slate);font-family:'Noto Sans KR',sans-serif;font-weight:700;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.pm-btn.sel{background:linear-gradient(135deg,var(--primary),var(--primary2));border-color:var(--primary);color:#fff;}
+
+/* ── PHOTO SLOTS ── */
+.photo-section{margin-bottom:18px;}
+.photo-section-title{font-size:.84rem;font-weight:700;color:var(--ink);margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+.dist-badge{background:linear-gradient(135deg,#F0BD3F,var(--lemon));color:#7A5A20;padding:2px 9px;border-radius:20px;font-size:.7rem;}
+.photo-slots{display:flex;gap:8px;}
+.photo-slot{flex:1;aspect-ratio:1;border-radius:var(--radius-sm);border:2px dashed rgba(91,141,239,.25);background:rgba(255,255,255,.5);overflow:hidden;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:all .2s;}
+.photo-slot input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.slot-placeholder{text-align:center;pointer-events:none;}
+.slot-icon{font-size:1.3rem;display:block;}
+.slot-num{font-size:.62rem;color:var(--fog);margin-top:2px;}
+.photo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.lux-overlay{position:absolute;bottom:0;left:0;right:0;background:rgba(160,126,46,.92);color:#fff;font-size:.6rem;font-weight:800;text-align:center;padding:3px 2px;pointer-events:none;}
+.photo-slot.analyzed{border-color:var(--success);border-style:solid;}
+.analyzing-badge{position:absolute;inset:0;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;}
+.spinner{width:20px;height:20px;border:3px solid rgba(91,141,239,.18);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── VIDEO UPLOAD ── */
+.video-upload-area{border:2.5px dashed rgba(91,141,239,.25);border-radius:var(--radius-sm);background:rgba(255,255,255,.5);padding:26px 16px;text-align:center;cursor:pointer;position:relative;transition:all .2s;margin-bottom:14px;}
+.video-upload-area:active{border-color:var(--primary);}
+.video-upload-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.video-upload-area .vu-icon{font-size:2.2rem;display:block;margin-bottom:8px;}
+.video-upload-area .vu-text{font-size:.82rem;color:var(--ink2);font-weight:700;}
+.video-upload-area .vu-hint{font-size:.7rem;color:var(--fog);margin-top:4px;}
+.video-preview{width:100%;border-radius:var(--radius-sm);background:#000;margin-bottom:12px;max-height:200px;}
+.frame-strip{display:flex;gap:4px;overflow-x:auto;padding:4px 0;margin-bottom:12px;}
+.frame-thumb{width:56px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1.5px solid rgba(91,141,239,.18);}
+
+/* ── RESULT TABLE ── */
+.result-table{width:100%;border-collapse:collapse;font-size:.78rem;}
+.result-table th{background:rgba(91,141,239,.1);color:var(--ink);padding:8px 6px;text-align:center;font-weight:700;border-bottom:2px solid rgba(91,141,239,.18);}
+.result-table td{padding:7px 6px;text-align:center;border-bottom:1px solid rgba(91,141,239,.08);color:var(--slate);}
+.result-table tr:last-child td{border-bottom:none;}
+.avg-cell{font-weight:700;color:var(--primary);}
+
+/* ── CHART ── */
+.chart-wrap{width:100%;margin:10px 0;background:rgba(255,255,255,.6);border-radius:var(--radius-sm);padding:10px;}
+
+/* ── PRESSURE GRID ── */
+.pressure-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px;}
+.pressure-item{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.pressure-num{font-size:.63rem;font-weight:700;color:var(--fog);}
+.pressure-val{width:100%;padding:8px 3px;border-radius:8px;border:1.5px solid rgba(91,141,239,.18);background:rgba(255,255,255,.85);font-size:.75rem;text-align:center;color:var(--ink);outline:none;transition:all .2s;font-family:'Noto Sans KR',sans-serif;-moz-appearance:textfield;}
+.pressure-val::-webkit-inner-spin-button,.pressure-val::-webkit-outer-spin-button{-webkit-appearance:none;}
+.pressure-val:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(123,200,229,.18);}
+.pressure-val.filled{border-color:var(--success);background:rgba(91,174,127,.08);}
+
+/* ── COUNT BTNS ── */
+.count-btns{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px;}
+.count-btn{padding:8px 14px;font-size:.8rem;border-radius:var(--radius-sm);border:2px solid rgba(91,141,239,.18);background:rgba(255,255,255,.6);color:var(--slate);font-family:'Noto Sans KR',sans-serif;font-weight:700;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.count-btn.sel{background:linear-gradient(135deg,var(--primary),var(--primary2));border-color:var(--primary);color:#fff;}
+
+/* ── INFO ROWS ── */
+.count-info{display:flex;align-items:center;justify-content:space-between;background:rgba(91,141,239,.07);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;}
+.ci-label{font-size:.78rem;color:var(--slate);}
+.ci-value{font-weight:700;color:var(--ink);font-size:.88rem;}
+
+/* ── AVG DISPLAY ── */
+.avg-display{text-align:center;background:rgba(255,255,255,.7);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;}
+.ad-label{font-size:.72rem;color:var(--fog);margin-bottom:4px;}
+.ad-value{font-family:'Jua',sans-serif;font-size:1.9rem;color:var(--primary);}
+.ad-unit{font-size:.9rem;color:var(--slate);}
+
+/* ── RESULT HIGHLIGHT ── */
+.result-hl{background:linear-gradient(135deg,rgba(91,141,239,.09),rgba(123,168,245,.14));border:2px solid rgba(91,141,239,.2);border-radius:var(--radius-sm);padding:18px;text-align:center;margin-bottom:14px;}
+.rh-label{font-size:.78rem;color:var(--slate);margin-bottom:5px;}
+.rh-value{font-family:'Jua',sans-serif;font-size:2.2rem;color:var(--primary);line-height:1;}
+.rh-unit{font-size:1rem;color:var(--fog);}
+.floor-badge{display:inline-block;font-size:.76rem;font-weight:700;color:var(--primary);background:rgba(91,141,239,.12);border-radius:20px;padding:3px 12px;margin-top:7px;}
+.result-hl.lemon{background:linear-gradient(135deg,rgba(245,206,94,.12),rgba(248,220,133,.18));border-color:rgba(245,206,94,.3);}
+.result-hl.lemon .rh-value{color:#A07E2E;}
+.result-hl.sky{background:linear-gradient(135deg,rgba(123,200,229,.12),rgba(154,213,236,.18));border-color:rgba(123,200,229,.3);}
+.result-hl.sky .rh-value{color:#2B7A99;}
+.result-hl.mint{background:linear-gradient(135deg,rgba(94,201,181,.12),rgba(125,216,198,.18));border-color:rgba(94,201,181,.3);}
+.result-hl.mint .rh-value{color:#2C8275;}
+.result-hl.sage{background:linear-gradient(135deg,rgba(154,203,135,.12),rgba(181,217,165,.18));border-color:rgba(154,203,135,.3);}
+.result-hl.sage .rh-value{color:#3F7530;}
+.result-hl.lavender{background:linear-gradient(135deg,rgba(167,139,216,.12),rgba(192,168,229,.18));border-color:rgba(167,139,216,.3);}
+.result-hl.lavender .rh-value{color:#5A4288;}
+.result-hl.peach{background:linear-gradient(135deg,rgba(245,163,140,.12),rgba(248,187,168,.18));border-color:rgba(245,163,140,.3);}
+.result-hl.peach .rh-value{color:#A24F35;}
+.result-hl.rose{background:linear-gradient(135deg,rgba(240,140,163,.12),rgba(245,168,186,.18));border-color:rgba(240,140,163,.3);}
+.result-hl.rose .rh-value{color:#A23E5A;}
+
+/* ── INFO BOX ── */
+.info-box{background:rgba(91,141,239,.08);border-left:3px solid var(--primary);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:10px 14px;margin-bottom:14px;}
+.info-box p{font-size:.79rem;color:var(--ink2);line-height:1.7;}
+.info-box strong{color:var(--primary);}
+.info-box.tip{background:rgba(94,201,181,.08);border-left-color:var(--mint);}
+.info-box.tip strong{color:#2C8275;}
+.info-box.warn{background:rgba(232,155,94,.09);border-left-color:var(--warn);}
+.info-box.warn strong{color:#A05E1E;}
+
+/* ── SOUND ANALYZER ── */
+#sound-canvas{width:100%;height:160px;background:rgba(167,139,216,.05);border-radius:var(--radius-sm);display:block;margin-bottom:12px;}
+.sound-display{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.sd-card{background:linear-gradient(135deg,rgba(167,139,216,.1),rgba(192,168,229,.15));border:1.5px solid rgba(167,139,216,.25);border-radius:var(--radius-sm);padding:12px;text-align:center;}
+.sd-label{font-size:.7rem;color:var(--slate);margin-bottom:3px;}
+.sd-value{font-family:'Jua',sans-serif;font-size:1.4rem;color:#5A4288;line-height:1.1;}
+.sd-unit{font-size:.7rem;color:var(--fog);}
+.sound-log{max-height:240px;overflow-y:auto;background:rgba(255,255,255,.6);border-radius:var(--radius-sm);padding:8px;margin-bottom:12px;}
+.sound-log-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;padding:6px 4px;font-size:.78rem;color:var(--slate);border-bottom:1px solid rgba(91,141,239,.08);align-items:center;}
+.sound-log-row:last-child{border-bottom:none;}
+.sound-log-row .sl-num{color:var(--fog);font-weight:700;}
+.sound-log-row .sl-freq{color:#5A4288;font-weight:700;}
+.sound-log-row .sl-note{background:rgba(167,139,216,.15);color:#5A4288;padding:1px 8px;border-radius:10px;font-weight:700;font-size:.72rem;}
+.sound-log-empty{text-align:center;color:var(--fog);font-size:.78rem;padding:14px 4px;}
+
+/* ── COLOR ANALYZER ── */
+#color-canvas{width:100%;border-radius:var(--radius-sm);background:#000;display:none;cursor:crosshair;margin-bottom:8px;}
+.color-result-grid{display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:center;margin-bottom:12px;}
+.color-swatch{width:80px;height:80px;border-radius:var(--radius-sm);border:2px solid rgba(91,141,239,.2);background:#eee;}
+.color-info{font-size:.82rem;color:var(--slate);line-height:1.8;}
+.color-info strong{color:var(--ink);}
+.ph-bar{display:flex;height:30px;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:8px;border:1px solid rgba(91,141,239,.15);}
+.ph-bar div{flex:1;text-align:center;font-size:.65rem;color:#fff;font-weight:700;line-height:30px;text-shadow:0 1px 1px rgba(0,0,0,.3);}
+.ph-marker{font-size:.72rem;color:#A24F35;font-weight:700;text-align:center;margin-bottom:10px;}
+
+/* ── PULSE (NEW) ── */
+.pulse-status{text-align:center;padding:30px 16px;background:radial-gradient(circle,rgba(240,140,163,.15),rgba(240,140,163,.03));border-radius:var(--radius-sm);margin-bottom:14px;}
+.pulse-icon{font-size:3rem;display:inline-block;animation:none;}
+.pulse-icon.beating{animation:pulse 1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+.pulse-bpm-display{font-family:'Jua',sans-serif;font-size:3rem;color:#A23E5A;line-height:1.1;margin:10px 0 4px;}
+.pulse-status-text{font-size:.85rem;color:var(--slate);}
+#pulse-canvas{width:100%;height:120px;background:rgba(240,140,163,.05);border-radius:var(--radius-sm);display:block;margin-bottom:12px;}
+.pulse-progress{height:8px;background:rgba(240,140,163,.15);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+.pulse-progress-bar{height:100%;background:linear-gradient(90deg,var(--rose),var(--rose2));width:0%;transition:width .3s;}
+#video-pulse{display:none;}
+
+/* ── REACTION (NEW) ── */
+.react-area{aspect-ratio:1.5;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:'Jua',sans-serif;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:background .15s;margin-bottom:14px;}
+.react-area.state-ready{background:linear-gradient(135deg,#5A6B85,#3F5478);}
+.react-area.state-waiting{background:linear-gradient(135deg,#E07880,#D86872);}
+.react-area.state-go{background:linear-gradient(135deg,#5BAE7F,#3F9168);}
+.react-area.state-result{background:linear-gradient(135deg,var(--primary),var(--primary2));}
+.react-area.state-falsestart{background:linear-gradient(135deg,#E89B5E,#D87E3E);}
+.react-big{font-size:2.2rem;line-height:1.2;}
+.react-sub{font-size:.85rem;font-weight:400;margin-top:6px;opacity:.92;}
+.react-attempts{display:flex;justify-content:space-around;text-align:center;background:rgba(255,255,255,.6);border-radius:var(--radius-sm);padding:10px;margin-bottom:12px;}
+.ra-item{flex:1;}
+.ra-label{font-size:.68rem;color:var(--fog);}
+.ra-value{font-family:'Jua',sans-serif;font-size:1.1rem;color:var(--primary);margin-top:2px;}
+.react-history{max-height:140px;overflow-y:auto;background:rgba(255,255,255,.6);border-radius:var(--radius-sm);padding:8px;margin-bottom:12px;}
+.react-history-row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:5px 4px;font-size:.78rem;color:var(--slate);align-items:center;border-bottom:1px solid rgba(91,141,239,.08);}
+.react-history-row:last-child{border-bottom:none;}
+
+/* ── MISC ── */
+.sep{height:1px;background:linear-gradient(90deg,transparent,rgba(91,141,239,.2),transparent);margin:14px 0;}
+.prog-text{text-align:center;font-size:.78rem;color:var(--fog);margin-bottom:12px;}
+.prog-text strong{color:var(--primary);}
+
+.loading{position:fixed;inset:0;z-index:1000;background:rgba(45,61,92,.55);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.loading.on{display:flex;}
+.loading-spin{width:44px;height:44px;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;}
+.loading-msg{font-family:'Jua',sans-serif;color:#fff;font-size:.95rem;text-align:center;line-height:1.7;}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(45,61,92,.95);color:#fff;padding:11px 22px;border-radius:50px;font-size:.82rem;z-index:2000;transition:transform .3s;backdrop-filter:blur(6px);white-space:nowrap;max-width:90vw;text-align:center;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.home-footer{text-align:center;padding:14px 20px 0;}
+.home-footer p{font-size:.7rem;color:rgba(90,107,133,.65);line-height:1.9;}
+</style>
+</head>
+<body>
+
+<div class="bg-wrap"></div>
+<div class="bubbles" id="bubbles"></div>
+<div class="loading" id="loading">
+  <div class="loading-spin"></div>
+  <div class="loading-msg" id="loading-msg">분석 중입니다.<br>잠시만 기다려 주세요.</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div id="app">
+
+<!-- ══ HOME ══════════════════════════════════════════ -->
+<div class="screen active" id="s-home">
+  <div class="app-header">
+    <span class="logo">🔬</span>
+    <h1>과학 탐구 분석 도구</h1>
+    <p class="sub">사진 · 영상 · 소리로 진행하는 융합 과학 탐구</p>
+    <button id="btn-settings" style="position:absolute;top:32px;right:20px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.85);border:1px solid rgba(91,141,239,.18);font-size:1.2rem;cursor:pointer;box-shadow:0 2px 6px rgba(91,141,239,.1);">⚙️</button>
+  </div>
+
+  <!-- API 키/백엔드 URL 미설정 시 표시 -->
+  <div id="config-warning" style="display:none;margin:0 16px 16px;padding:14px 16px;background:linear-gradient(135deg,rgba(232,155,94,.18),rgba(245,206,94,.22));border:1.5px solid rgba(232,155,94,.5);border-radius:14px;">
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:1.4rem;">⚙️</span>
+      <div style="flex:1;">
+        <div style="font-family:'Jua',sans-serif;font-size:.95rem;color:#A05E1E;margin-bottom:4px;">초기 설정이 필요합니다</div>
+        <p style="font-size:.78rem;color:#5A4218;line-height:1.6;margin-bottom:10px;">처음 사용 시 Gemini API 키와 백엔드 URL을 등록해야 합니다. 설정은 본 기기에만 저장되며 외부로 전송되지 않습니다.</p>
+        <button id="btn-config-open" style="display:block;width:100%;padding:10px;border:none;border-radius:10px;background:linear-gradient(135deg,#E89B5E,#D87E3E);color:#fff;font-weight:700;font-family:'Noto Sans KR',sans-serif;font-size:.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;">⚙️ 설정 화면 열기</button>
+      </div>
+    </div>
+  </div>
+  <div class="home-grid">
+    <div class="home-card t-light" id="btn-go-light">
+      <span class="hc-badge">탐구 1</span>
+      <span class="hc-icon">💡</span>
+      <div class="hc-title">빛의 밝기</div>
+      <p class="hc-desc">광원과의 거리에 따른 조도(lux) 변화를 측정하여 역제곱 법칙을 확인하는 도구입니다.</p>
+    </div>
+    <div class="home-card t-press" id="btn-go-pressure">
+      <span class="hc-badge">탐구 2</span>
+      <span class="hc-icon">🌡️</span>
+      <div class="hc-title">기압과 높이</div>
+      <p class="hc-desc">측정된 기압값을 입력하면 국제표준대기 공식으로 현재 위치의 고도를 계산하는 도구입니다.</p>
+    </div>
+    <div class="home-card t-pend" id="btn-go-pend">
+      <span class="hc-badge">탐구 3</span>
+      <span class="hc-icon">🪀</span>
+      <div class="hc-title">진자 운동</div>
+      <p class="hc-desc">진자 영상을 업로드하면 AI가 주기를 분석하여 중력가속도 g 값을 계산하는 도구입니다.</p>
+    </div>
+    <div class="home-card t-motion" id="btn-go-motion">
+      <span class="hc-badge">탐구 4</span>
+      <span class="hc-icon">🚀</span>
+      <div class="hc-title">물체 운동</div>
+      <p class="hc-desc">움직이는 물체의 영상에서 AI가 위치를 추적하여 속력과 가속도를 산출하는 도구입니다.</p>
+    </div>
+    <div class="home-card t-sound" id="btn-go-sound">
+      <span class="hc-badge">탐구 5</span>
+      <span class="hc-icon">🎵</span>
+      <div class="hc-title">소리 주파수</div>
+      <p class="hc-desc">마이크로 들어오는 소리를 FFT로 분석하여 진동수(Hz)와 음계를 실시간으로 측정하는 도구입니다.</p>
+    </div>
+    <div class="home-card t-color" id="btn-go-color">
+      <span class="hc-badge">탐구 6</span>
+      <span class="hc-icon">🎨</span>
+      <div class="hc-title">색·pH 분석</div>
+      <p class="hc-desc">지시약 사진의 색상을 RGB로 추출하고 만능지시약 기준으로 pH를 추정하는 도구입니다.</p>
+    </div>
+    <div class="home-card t-pulse" id="btn-go-soundspeed">
+      <span class="hc-badge">탐구 7</span>
+      <span class="hc-icon">🔊</span>
+      <div class="hc-title">소리의 속력</div>
+      <p class="hc-desc">벽에서 반사된 메아리의 시간 차로부터 공기 중 음속을 계산하는 도구입니다.</p>
+    </div>
+    <div class="home-card t-react" id="btn-go-accel">
+      <span class="hc-badge">탐구 8</span>
+      <span class="hc-icon">📱</span>
+      <div class="hc-title">가속도 센서</div>
+      <p class="hc-desc">스마트폰 가속도계로 중력가속도와 운동 가속도를 실시간 측정·분석하는 도구입니다.</p>
+    </div>
+  </div>
+  <div class="home-footer"><p>AI + Google Apps Script 기반 과학 탐구 보조 도구</p></div>
+</div>
+
+<!-- ══ LIGHT S1 ════════════════════════════════════ -->
+<div class="screen" id="s-l1">
+  <div class="step-header">
+    <button class="back-btn" id="l1-back">‹</button>
+    <div class="step-info"><div class="step-title">💡 빛의 밝기 탐구</div><div class="step-sub">STEP 1 — 거리 설정</div></div>
+  </div>
+  <div class="progress"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+  <div class="card">
+    <div class="card-title">거리 입력 방식 선택</div>
+    <p class="card-desc" style="margin-bottom:15px;">광원과 카메라 사이의 거리를 설정합니다. 기본 거리(10·20·30cm)를 사용하거나 직접 입력할 수 있습니다.</p>
+    <div class="option-cards">
+      <div class="option-card selected" id="oc-default"><span class="oc-icon">📏</span><div class="oc-label">기본 (10·20·30cm)</div></div>
+      <div class="option-card" id="oc-custom"><span class="oc-icon">✏️</span><div class="oc-label">직접 입력</div></div>
+    </div>
+    <div id="mode-default">
+      <div class="info-box"><p><strong>기본 거리:</strong> 10cm · 20cm · 30cm<br>각 거리에서 사진을 3장씩 촬영합니다.</p></div>
+    </div>
+    <div id="mode-custom" style="display:none;">
+      <div class="info-box"><p>원하는 거리를 <strong>3가지</strong> 입력합니다.</p></div>
+      <div class="input-group"><label class="input-label">거리 1 (cm)</label><input class="inp" type="number" id="cd1" placeholder="예: 5" min="1" inputmode="numeric"></div>
+      <div class="input-group"><label class="input-label">거리 2 (cm)</label><input class="inp" type="number" id="cd2" placeholder="예: 15" min="1" inputmode="numeric"></div>
+      <div class="input-group"><label class="input-label">거리 3 (cm)</label><input class="inp" type="number" id="cd3" placeholder="예: 25" min="1" inputmode="numeric"></div>
+    </div>
+    <div class="sep"></div>
+    <p class="card-desc" style="margin-bottom:8px;">📸 사진 입력 방식</p>
+    <div class="photo-method-toggle">
+      <button class="pm-btn sel" id="pm-camera">📷 카메라 촬영</button>
+      <button class="pm-btn" id="pm-gallery">🖼️ 갤러리에서 선택</button>
+    </div>
+    <button class="btn btn-primary" id="l1-next">다음으로 →</button>
+    <button class="btn btn-secondary btn-mt" id="l1-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ LIGHT S2 ════════════════════════════════════ -->
+<div class="screen" id="s-l2">
+  <div class="step-header">
+    <button class="back-btn" id="l2-back">‹</button>
+    <div class="step-info"><div class="step-title">💡 사진 업로드 및 분석</div><div class="step-sub">STEP 2 — 거리별 3장씩 업로드</div></div>
+  </div>
+  <div class="progress"><div class="dot done"></div><div class="dot active"></div><div class="dot"></div></div>
+  <div class="card" id="upload-card"></div>
+  <div style="padding:0 16px;">
+    <button class="btn btn-lemon" id="btn-analyze" disabled>🔍 AI 분석 시작</button>
+    <button class="btn btn-secondary btn-mt" id="l2-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ LIGHT S3 ════════════════════════════════════ -->
+<div class="screen" id="s-l3">
+  <div class="step-header">
+    <button class="back-btn" id="l3-back">‹</button>
+    <div class="step-info"><div class="step-title">💡 분석 결과</div><div class="step-sub">STEP 3 — 그래프 확인</div></div>
+  </div>
+  <div class="progress"><div class="dot done"></div><div class="dot done"></div><div class="dot active"></div></div>
+  <div id="pdf-light">
+    <div class="card"><div class="card-title" style="margin-bottom:12px;">📊 조도 측정 결과표</div><table class="result-table" id="light-table"></table></div>
+    <div class="card"><div class="card-title" style="margin-bottom:8px;">📈 거리 vs 밝기</div><div class="chart-wrap"><canvas id="c-dist"></canvas></div></div>
+    <div class="card"><div class="card-title" style="margin-bottom:8px;">📈 거리² vs 밝기</div><div class="chart-wrap"><canvas id="c-dist2"></canvas></div></div>
+    <div class="card"><div class="card-title" style="margin-bottom:8px;">📈 1/거리² vs 밝기 (역제곱 법칙)</div><div class="chart-wrap"><canvas id="c-inv2"></canvas></div></div>
+  </div>
+  <div style="padding:0 16px 10px;">
+    <button class="btn btn-lemon" id="btn-light-pdf">⬇️ PDF로 저장</button>
+    <button class="btn btn-secondary btn-mt" id="btn-light-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ PRESSURE S1 ════════════════════════════════ -->
+<div class="screen" id="s-p1">
+  <div class="step-header">
+    <button class="back-btn" id="p1-back">‹</button>
+    <div class="step-info"><div class="step-title">🌡️ 기압 → 높이 계산</div><div class="step-sub">STEP 1 — 측정 횟수 설정</div></div>
+  </div>
+  <div class="progress"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
+  <div class="card">
+    <div class="card-title">기준 기압 정보</div>
+    <div style="margin-top:10px;">
+      <div class="count-info"><span class="ci-label">기준 기압</span><span class="ci-value" id="bl-pressure">불러오는 중...</span></div>
+      <div class="count-info"><span class="ci-label">기준 위치</span><span class="ci-value" id="bl-location">-</span></div>
+      <div class="count-info"><span class="ci-label">기준 고도</span><span class="ci-value" id="bl-altitude">-</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">측정 횟수 선택</div>
+    <p class="card-desc" style="margin-bottom:12px;">기압 측정값을 여러 번 입력할수록 평균값의 정확도가 높아집니다. 최소 5회 이상 권장합니다.</p>
+    <div class="count-btns" id="count-btns">
+      <button class="count-btn" data-n="5">5회</button>
+      <button class="count-btn" data-n="6">6회</button>
+      <button class="count-btn" data-n="7">7회</button>
+      <button class="count-btn" data-n="8">8회</button>
+      <button class="count-btn" data-n="9">9회</button>
+      <button class="count-btn" data-n="10">10회</button>
+    </div>
+    <div class="sep"></div>
+    <div class="card-title" style="font-size:.95rem;margin-bottom:6px;">📲 기압 측정 방법 안내</div>
+    <div class="info-box warn">
+      <p><strong>웹 브라우저는 휴대폰의 기압 센서에 직접 접근할 수 없습니다.</strong><br>이는 웹 표준의 보안 정책에 따른 공통 제약사항입니다.</p>
+    </div>
+    <div class="info-box tip">
+      <p><strong>측정 방법:</strong><br>
+      ① 앱스토어에서 <strong>"Barometer Plus"</strong> 또는 <strong>"기압계"</strong> 검색<br>
+      ② 무료 기압계 앱 설치 후 실행<br>
+      ③ 표시되는 hPa 값을 다음 단계에서 입력<br><br>
+      💡 <strong>iPhone:</strong> 기본 "나침반" 앱에 고도·기압 표시 기능<br>
+      💡 <strong>Android:</strong> "Sensors Multitool" 등의 앱 추천</p>
+    </div>
+    <button class="btn btn-sky" id="p1-next">다음으로 →</button>
+    <button class="btn btn-secondary btn-mt" id="p1-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ PRESSURE S2 ════════════════════════════════ -->
+<div class="screen" id="s-p2">
+  <div class="step-header">
+    <button class="back-btn" id="p2-back">‹</button>
+    <div class="step-info"><div class="step-title">🌡️ 기압값 입력</div><div class="step-sub">STEP 2 — 측정값 입력</div></div>
+  </div>
+  <div class="progress"><div class="dot done"></div><div class="dot active"></div><div class="dot"></div></div>
+  <div class="card">
+    <div class="card-title">기압 측정값 입력</div>
+    <p class="card-desc" style="margin-bottom:12px;">단위는 hPa입니다 (예: 1013.25). 입력 후 값을 클릭하면 수정할 수 있습니다.</p>
+    <div class="pressure-grid" id="p-inputs"></div>
+    <div class="avg-display">
+      <div class="ad-label">현재까지의 평균 기압</div>
+      <div class="ad-value"><span id="cur-avg">-</span><span class="ad-unit"> hPa</span></div>
+    </div>
+    <p class="prog-text"><strong id="p-filled">0</strong> / <strong id="p-total">5</strong>회 입력 완료</p>
+    <button class="btn btn-sky" id="btn-calc" disabled>🔢 높이 계산</button>
+    <button class="btn btn-secondary btn-mt" id="p2-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ PRESSURE S3 ════════════════════════════════ -->
+<div class="screen" id="s-p3">
+  <div class="step-header">
+    <button class="back-btn" id="p3-back">‹</button>
+    <div class="step-info"><div class="step-title">🌡️ 높이 계산 결과</div><div class="step-sub">STEP 3 — 결과 확인</div></div>
+  </div>
+  <div class="progress"><div class="dot done"></div><div class="dot done"></div><div class="dot active"></div></div>
+  <div id="pdf-pressure">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px;">📍 현재 위치 추정 높이</div>
+      <div class="result-hl sky">
+        <div class="rh-label">계산된 높이</div>
+        <div class="rh-value"><span id="r-height">-</span><span class="rh-unit"> m</span></div>
+        <div id="r-floor" class="floor-badge" style="display:none;"></div>
+      </div>
+      <div class="count-info"><span class="ci-label">평균 측정 기압</span><span class="ci-value"><span id="r-avg">-</span> hPa</span></div>
+      <div class="count-info"><span class="ci-label">기준 기압</span><span class="ci-value"><span id="r-base">-</span> hPa</span></div>
+      <div class="count-info"><span class="ci-label">기준 고도</span><span class="ci-value"><span id="r-alt">-</span> m</span></div>
+    </div>
+    <div class="card"><div class="card-title" style="margin-bottom:8px;">📈 기압과 높이의 관계</div><div class="chart-wrap"><canvas id="c-ph"></canvas></div></div>
+    <div class="card"><div class="card-title" style="margin-bottom:10px;">📋 입력 측정값</div><table class="result-table" id="p-table"></table></div>
+  </div>
+  <div style="padding:0 16px 10px;">
+    <button class="btn btn-sky" id="btn-p-pdf">⬇️ PDF로 저장</button>
+    <button class="btn btn-secondary btn-mt" id="btn-p-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ PENDULUM S1 ════════════════════════════════ -->
+<div class="screen" id="s-pend1">
+  <div class="step-header">
+    <button class="back-btn" id="pend1-back">‹</button>
+    <div class="step-info"><div class="step-title">🪀 진자 운동 분석</div><div class="step-sub">STEP 1 — 영상 업로드</div></div>
+  </div>
+  <div class="progress"><div class="dot active"></div><div class="dot"></div></div>
+  <div class="card">
+    <div class="card-title">진자 영상 업로드</div>
+    <p class="card-desc" style="margin-bottom:14px;">진자가 좌우로 흔들리는 영상을 업로드하면, AI가 프레임별 진자 위치를 추적하여 주기를 계산하고, T = 2π√(L/g) 공식으로 중력가속도 g를 산출합니다.</p>
+    <div class="info-box tip">
+      <p><strong>촬영 권장사항</strong><br>
+      · 배경은 단색(흰 벽 등)이 적합합니다.<br>
+      · 진자 추는 선명하게 보이도록 합니다.<br>
+      · 최소 2~3주기 이상 촬영합니다.<br>
+      · 카메라는 삼각대 등으로 고정합니다.</p>
+    </div>
+    <div class="photo-method-toggle">
+      <button class="pm-btn sel" id="pend-pm-camera">📹 영상 촬영</button>
+      <button class="pm-btn" id="pend-pm-gallery">🖼️ 갤러리에서 선택</button>
+    </div>
+    <div class="video-upload-area" id="pend-video-area">
+      <input type="file" accept="video/*" capture="environment" id="pend-video-file">
+      <span class="vu-icon">🎬</span>
+      <span class="vu-text">탭하여 영상 업로드</span>
+      <span class="vu-hint">MP4, MOV 등 동영상 파일</span>
+    </div>
+    <video class="video-preview" id="pend-video-preview" controls style="display:none;"></video>
+    <div id="pend-frames-wrap" style="display:none;">
+      <p style="font-size:.75rem;color:var(--fog);margin-bottom:6px;">추출된 프레임 미리보기</p>
+      <div class="frame-strip" id="pend-frames"></div>
+    </div>
+    <div class="sep"></div>
+    <div class="input-group">
+      <label class="input-label">⚖️ 진자의 길이 L (cm) — 실의 끝점부터 추 중심까지</label>
+      <input class="inp" type="number" id="pend-length" placeholder="예: 50" min="1" inputmode="decimal">
+    </div>
+    <div class="input-group">
+      <label class="input-label">📊 분석 프레임 수</label>
+      <div class="count-btns">
+        <button class="count-btn pend-frame-btn" data-n="10">10장</button>
+        <button class="count-btn pend-frame-btn" data-n="15">15장</button>
+        <button class="count-btn pend-frame-btn sel" data-n="20">20장</button>
+        <button class="count-btn pend-frame-btn" data-n="25">25장</button>
+      </div>
+    </div>
+    <button class="btn btn-mint" id="btn-pend-analyze" disabled>🔍 AI 분석 시작</button>
+    <button class="btn btn-secondary btn-mt" id="pend1-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ PENDULUM S2 ═════════════════════════════════ -->
+<div class="screen" id="s-pend2">
+  <div class="step-header">
+    <button class="back-btn" id="pend2-back">‹</button>
+    <div class="step-info"><div class="step-title">🪀 진자 분석 결과</div><div class="step-sub">STEP 2 — 결과 확인</div></div>
+  </div>
+  <div class="progress"><div class="dot done"></div><div class="dot active"></div></div>
+  <div id="pdf-pend">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px;">🎯 중력가속도 계산 결과</div>
+      <div class="result-hl mint">
+        <div class="rh-label">계산된 중력가속도 g</div>
+        <div class="rh-value"><span id="pend-g">-</span><span class="rh-unit"> m/s²</span></div>
+      </div>
+      <div class="count-info"><span class="ci-label">측정 주기 T</span><span class="ci-value"><span id="pend-period">-</span> s</span></div>
+      <div class="count-info"><span class="ci-label">진자 길이 L</span><span class="ci-value"><span id="pend-length-r">-</span> cm</span></div>
+      <div class="count-info"><span class="ci-label">표준 중력가속도</span><span class="ci-value">9.80 m/s²</span></div>
+      <div class="count-info"><span class="ci-label">오차율</span><span class="ci-value"><span id="pend-error">-</span> %</span></div>
+    </div>
+    <div class="card"><div class="card-title" style="margin-bottom:8px;">📈 진자 위치 변화 (프레임별)</div><div class="chart-wrap"><canvas id="c-pend-pos"></canvas></div></div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px;">💡 탐구 결과 해석</div>
+      <div id="pend-interpret" class="card-desc"></div>
+    </div>
+  </div>
+  <div style="padding:0 16px 10px;">
+    <button class="btn btn-mint" id="btn-pend-pdf">⬇️ PDF로 저장</button>
+    <button class="btn btn-secondary btn-mt" id="btn-pend-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ MOTION S1 ══════════════════════════════════ -->
+<div class="screen" id="s-motion1">
+  <div class="step-header">
+    <button class="back-btn" id="mot1-back">‹</button>
+    <div class="step-info"><div class="step-title">🚀 물체 운동 분석</div><div class="step-sub">STEP 1 — 영상 업로드</div></div>
+  </div>
+  <div class="progress"><div class="dot active"></div><div class="dot"></div></div>
+  <div class="card">
+    <div class="card-title">운동 영상 업로드</div>
+    <p class="card-desc" style="margin-bottom:14px;">움직이는 물체의 영상을 업로드하면, AI가 프레임별 물체 위치를 추적하여 시간에 따른 속력과 가속도를 산출합니다.</p>
+    <div class="info-box tip">
+      <p><strong>촬영 권장사항</strong><br>
+      · 물체가 한 방향으로 움직이는 영상이 적합합니다.<br>
+      · 자(눈금자) 등 기준 길이를 함께 촬영하면 실제 거리 환산이 가능합니다.<br>
+      · 카메라는 고정 상태로 촬영합니다.<br>
+      · 1~3초 정도의 짧은 영상도 분석 가능합니다.</p>
+    </div>
+    <div class="photo-method-toggle">
+      <button class="pm-btn sel" id="mot-pm-camera">📹 영상 촬영</button>
+      <button class="pm-btn" id="mot-pm-gallery">🖼️ 갤러리에서 선택</button>
+    </div>
+    <div class="video-upload-area" id="mot-video-area">
+      <input type="file" accept="video/*" capture="environment" id="mot-video-file">
+      <span class="vu-icon">🎬</span>
+      <span class="vu-text">탭하여 영상 업로드</span>
+      <span class="vu-hint">MP4, MOV 등 동영상 파일</span>
+    </div>
+    <video class="video-preview" id="mot-video-preview" controls style="display:none;"></video>
+    <div id="mot-frames-wrap" style="display:none;">
+      <p style="font-size:.75rem;color:var(--fog);margin-bottom:6px;">추출된 프레임 미리보기</p>
+      <div class="frame-strip" id="mot-frames"></div>
+    </div>
+    <div class="sep"></div>
+    <p class="card-desc" style="margin-bottom:10px;">📏 실제 거리 환산 (선택사항)</p>
+    <div style="display:flex;gap:10px;">
+      <div class="input-group" style="flex:1;margin-bottom:0;">
+        <label class="input-label">실제 길이 (cm)</label>
+        <input class="inp" type="number" id="mot-real-cm" placeholder="예: 30" min="1" inputmode="decimal">
+      </div>
+      <div class="input-group" style="flex:1;margin-bottom:0;">
+        <label class="input-label">화면 내 픽셀 수</label>
+        <input class="inp" type="number" id="mot-pixel" placeholder="예: 150" min="1" inputmode="decimal">
+      </div>
+    </div>
+    <p style="font-size:.7rem;color:var(--fog);margin:6px 0 14px;">입력하지 않으면 화면 비율 단위로 분석됩니다.</p>
+    <div class="input-group">
+      <label class="input-label">📊 분석 프레임 수</label>
+      <div class="count-btns">
+        <button class="count-btn mot-frame-btn" data-n="10">10장</button>
+        <button class="count-btn mot-frame-btn sel" data-n="15">15장</button>
+        <button class="count-btn mot-frame-btn" data-n="20">20장</button>
+      </div>
+    </div>
+    <button class="btn btn-sage" id="btn-mot-analyze" disabled>🔍 AI 분석 시작</button>
+    <button class="btn btn-secondary btn-mt" id="mot1-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ MOTION S2 ══════════════════════════════════ -->
+<div class="screen" id="s-motion2">
+  <div class="step-header">
+    <button class="back-btn" id="mot2-back">‹</button>
+    <div class="step-info"><div class="step-title">🚀 운동 분석 결과</div><div class="step-sub">STEP 2 — 결과 확인</div></div>
+  </div>
+  <div class="progress"><div class="dot done"></div><div class="dot active"></div></div>
+  <div id="pdf-motion">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px;">⚡ 속력 분석 결과</div>
+      <div class="result-hl sage">
+        <div class="rh-label">최대 속력</div>
+        <div class="rh-value"><span id="mot-max-speed">-</span><span class="rh-unit"> 단위/s</span></div>
+      </div>
+      <div class="count-info"><span class="ci-label">평균 속력</span><span class="ci-value"><span id="mot-avg-speed">-</span> 단위/s</span></div>
+      <div class="count-info"><span class="ci-label">분석 프레임 수</span><span class="ci-value"><span id="mot-frames-count">-</span> 장</span></div>
+    </div>
+    <div class="card"><div class="card-title" style="margin-bottom:8px;">📈 시간-속력 그래프</div><div class="chart-wrap"><canvas id="c-mot-speed"></canvas></div></div>
+    <div class="card"><div class="card-title" style="margin-bottom:8px;">📈 시간-위치 그래프</div><div class="chart-wrap"><canvas id="c-mot-pos"></canvas></div></div>
+    <div class="card"><div class="card-title" style="margin-bottom:10px;">📋 프레임별 데이터</div><table class="result-table" id="mot-table"></table></div>
+  </div>
+  <div style="padding:0 16px 10px;">
+    <button class="btn btn-sage" id="btn-mot-pdf">⬇️ PDF로 저장</button>
+    <button class="btn btn-secondary btn-mt" id="btn-mot-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ SOUND S1 ═══════════════════════════════════ -->
+<div class="screen" id="s-sound1">
+  <div class="step-header">
+    <button class="back-btn" id="sound1-back">‹</button>
+    <div class="step-info"><div class="step-title">🎵 소리 주파수 분석</div><div class="step-sub">실시간 마이크 측정</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">실시간 주파수 측정</div>
+    <p class="card-desc" style="margin-bottom:14px;">마이크로 들어오는 소리를 고속푸리에변환(FFT)으로 분석하여, 가장 강한 주파수(Hz)와 해당 음계를 실시간으로 표시하는 도구입니다.</p>
+    <div class="info-box tip">
+      <p><strong>탐구 활용 예시</strong><br>
+      · 피아노·기타 등 악기의 음 진동수 측정<br>
+      · 컵에 담긴 물의 양에 따른 진동수 변화 비교<br>
+      · 목소리·휘파람 등 발성의 주파수 분석<br>
+      · 소리굽쇠(440Hz 등) 표준 확인</p>
+    </div>
+    <canvas id="sound-canvas"></canvas>
+    <div class="sound-display">
+      <div class="sd-card">
+        <div class="sd-label">주파수</div>
+        <div class="sd-value"><span id="sound-freq">-</span><span class="sd-unit"> Hz</span></div>
+      </div>
+      <div class="sd-card">
+        <div class="sd-label">음계</div>
+        <div class="sd-value" id="sound-note">-</div>
+      </div>
+    </div>
+    <button class="btn btn-lavender" id="btn-sound-start">🎙️ 마이크 시작</button>
+    <button class="btn btn-secondary btn-mt" id="btn-sound-capture" style="display:none;">📌 현재값 기록</button>
+    <button class="btn btn-secondary btn-mt" id="btn-sound-stop" style="display:none;">⏸️ 측정 중지</button>
+    <div class="sep"></div>
+    <div class="card-title" style="font-size:.95rem;">📋 기록된 측정값</div>
+    <p class="card-desc" style="margin-bottom:8px;">📌 버튼을 누르면 현재 측정값이 아래 목록에 저장됩니다.</p>
+    <div class="sound-log" id="sound-log"><div class="sound-log-empty">아직 기록된 값이 없습니다.</div></div>
+    <div class="input-group">
+      <label class="input-label">📝 음원 정보 (선택사항)</label>
+      <input class="inp" type="text" id="sound-source" placeholder="예: 피아노 A4 건반">
+    </div>
+    <button class="btn btn-lavender" id="btn-sound-save" disabled>💾 시트에 저장</button>
+    <button class="btn btn-secondary btn-mt" id="sound1-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ COLOR S1 ═══════════════════════════════════ -->
+<div class="screen" id="s-color1">
+  <div class="step-header">
+    <button class="back-btn" id="color1-back">‹</button>
+    <div class="step-info"><div class="step-title">🎨 색·pH 지시약 분석</div><div class="step-sub">사진 색상 → pH 추정</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">색상 추출 및 pH 추정</div>
+    <p class="card-desc" style="margin-bottom:14px;">지시약 사진을 업로드한 뒤 분석할 지점을 탭하면, 해당 픽셀의 RGB 색상을 추출하고 만능지시약 색상 차트를 기준으로 pH를 추정하는 도구입니다.</p>
+    <div class="info-box tip">
+      <p><strong>탐구 활용 예시</strong><br>
+      · 만능지시약 종이의 색 변화 측정<br>
+      · 산성·염기성 용액의 색상 비교<br>
+      · 자주색 양배추 즙을 이용한 지시약 실험<br>
+      · 단풍잎·꽃잎의 RGB 색상 분석</p>
+    </div>
+    <div class="photo-method-toggle">
+      <button class="pm-btn sel" id="color-pm-camera">📷 카메라 촬영</button>
+      <button class="pm-btn" id="color-pm-gallery">🖼️ 갤러리에서 선택</button>
+    </div>
+    <div class="video-upload-area" id="color-upload-area">
+      <input type="file" accept="image/*" capture="environment" id="color-file">
+      <span class="vu-icon">📸</span>
+      <span class="vu-text">탭하여 사진 업로드</span>
+      <span class="vu-hint">업로드 후 분석할 지점을 탭하면 색상이 추출됩니다.</span>
+    </div>
+    <canvas id="color-canvas"></canvas>
+    <p id="color-hint" style="font-size:.75rem;color:#A24F35;text-align:center;margin-bottom:10px;display:none;">👆 사진 위 분석하고 싶은 지점을 탭하세요.</p>
+    <div id="color-result" style="display:none;">
+      <div class="sep"></div>
+      <div class="card-title" style="font-size:.95rem;margin-bottom:8px;">🎯 색 분석 결과</div>
+      <div class="color-result-grid">
+        <div class="color-swatch" id="color-swatch"></div>
+        <div class="color-info">
+          <strong>RGB:</strong> <span id="color-rgb">-</span><br>
+          <strong>HEX:</strong> <span id="color-hex">-</span><br>
+          <strong>HSL:</strong> <span id="color-hsl">-</span>
+        </div>
+      </div>
+      <div class="card-title" style="font-size:.95rem;margin-bottom:8px;">🧪 추정 pH (만능지시약 기준)</div>
+      <div class="ph-bar" id="ph-bar"></div>
+      <div class="ph-marker" id="ph-marker">pH ≈ -</div>
+      <div class="result-hl peach" style="margin-top:6px;">
+        <div class="rh-label">추정 pH 범위</div>
+        <div class="rh-value" style="font-size:1.5rem;"><span id="color-ph">-</span></div>
+      </div>
+      <div class="info-box warn" style="margin-top:10px;">
+        <p><strong>주의사항:</strong> pH 추정값은 촬영 조명과 카메라의 자동 색보정에 따라 오차가 발생할 수 있습니다. 정밀한 측정이 필요한 경우 pH 측정기와 함께 비교하여 사용하세요.</p>
+      </div>
+      <div class="input-group">
+        <label class="input-label">📝 시료 이름 (선택사항)</label>
+        <input class="inp" type="text" id="color-sample" placeholder="예: 레몬즙, 비눗물">
+      </div>
+      <button class="btn btn-peach" id="btn-color-save">💾 시트에 저장</button>
+    </div>
+    <button class="btn btn-secondary btn-mt" id="color1-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ SOUND SPEED S1 (NEW: 소리의 속력) ═══════════ -->
+<div class="screen" id="s-soundspeed1">
+  <div class="step-header">
+    <button class="back-btn" id="ssp1-back">‹</button>
+    <div class="step-info"><div class="step-title">🔊 소리의 속력 측정</div><div class="step-sub">메아리 시간차 분석</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">메아리를 이용한 음속 측정</div>
+    <p class="card-desc" style="margin-bottom:14px;">벽에서 가까운 곳에서 박수를 한 번 치면, 마이크에는 직접음과 벽에서 반사되어 돌아온 메아리가 시간 차를 두고 녹음됩니다. 두 소리의 시간 차 Δt와 벽까지의 거리 d로부터 <strong>v = 2d / Δt</strong> 공식을 통해 공기 중 소리의 속력을 계산하는 도구입니다.</p>
+    <div class="info-box tip">
+      <p><strong>측정 방법</strong><br>
+      ① 단단하고 평평한 벽 앞 5m 이상 거리에 섭니다.<br>
+      ② 줄자나 레이저 거리계로 벽까지의 거리를 정확히 측정해 입력합니다.<br>
+      ③ "측정 시작" 버튼을 누른 뒤 박수를 한 번 강하게 칩니다.<br>
+      ④ 약 1초간 녹음한 음원에서 직접음과 메아리의 시각이 자동 검출됩니다.<br>
+      ⑤ 두 소리의 시간 차로부터 음속이 계산됩니다.</p>
+    </div>
+    <div class="info-box warn">
+      <p><strong>유의사항</strong><br>
+      · 벽까지 거리가 너무 가까우면(약 3m 미만) 직접음과 메아리가 겹쳐 검출이 어렵습니다.<br>
+      · 주변 소음이 적은 환경에서 측정하면 정확도가 높아집니다.<br>
+      · 기온이 높을수록 음속이 빨라집니다 (이론값: v ≈ 331.5 + 0.6T m/s).</p>
+    </div>
+    <div class="input-group">
+      <label class="input-label">📏 벽까지의 거리 d (m)</label>
+      <input class="inp" type="number" id="ssp-distance" placeholder="예: 10" min="3" step="0.1" inputmode="decimal">
+    </div>
+    <div class="input-group">
+      <label class="input-label">🌡️ 현재 기온 (℃, 선택사항 — 이론값 계산용)</label>
+      <input class="inp" type="number" id="ssp-temp" placeholder="예: 20" step="0.1" inputmode="decimal">
+    </div>
+    <canvas id="ssp-canvas" style="width:100%;height:140px;background:rgba(240,140,163,.05);border-radius:var(--radius-sm);display:block;margin-bottom:12px;"></canvas>
+    <div class="sound-display">
+      <div class="sd-card" style="background:linear-gradient(135deg,rgba(240,140,163,.1),rgba(245,168,186,.15));border-color:rgba(240,140,163,.25);">
+        <div class="sd-label">시간 차 Δt</div>
+        <div class="sd-value" style="color:#A23E5A;"><span id="ssp-delta">-</span><span class="sd-unit"> ms</span></div>
+      </div>
+      <div class="sd-card" style="background:linear-gradient(135deg,rgba(240,140,163,.1),rgba(245,168,186,.15));border-color:rgba(240,140,163,.25);">
+        <div class="sd-label">측정 음속 v</div>
+        <div class="sd-value" style="color:#A23E5A;"><span id="ssp-speed">-</span><span class="sd-unit"> m/s</span></div>
+      </div>
+    </div>
+    <div id="ssp-result-detail" style="display:none;">
+      <div class="result-hl rose">
+        <div class="rh-label">측정된 공기 중 음속</div>
+        <div class="rh-value"><span id="ssp-speed-big">-</span><span class="rh-unit"> m/s</span></div>
+      </div>
+      <div class="count-info"><span class="ci-label">이론값 (입력 기온 기준)</span><span class="ci-value"><span id="ssp-theory">-</span> m/s</span></div>
+      <div class="count-info"><span class="ci-label">오차율</span><span class="ci-value"><span id="ssp-error">-</span> %</span></div>
+      <div class="info-box tip" style="margin-top:10px;">
+        <p id="ssp-interpret"></p>
+      </div>
+    </div>
+    <button class="btn btn-rose" id="btn-ssp-start">🎙️ 측정 시작 (박수 준비)</button>
+    <button class="btn btn-rose btn-mt" id="btn-ssp-save" disabled>💾 시트에 저장</button>
+    <button class="btn btn-secondary btn-mt" id="ssp1-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ ACCEL S1 (NEW: 가속도 센서) ═════════════════ -->
+<div class="screen" id="s-accel1">
+  <div class="step-header">
+    <button class="back-btn" id="acc1-back">‹</button>
+    <div class="step-info"><div class="step-title">📱 가속도 센서 분석</div><div class="step-sub">DeviceMotion 실시간 측정</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">스마트폰 가속도계 활용 측정</div>
+    <p class="card-desc" style="margin-bottom:14px;">스마트폰에 내장된 3축 가속도 센서(DeviceMotion API)로 x · y · z 각 방향의 가속도(m/s²)를 실시간 측정합니다. 정지 상태에서는 중력가속도 g ≈ 9.80 m/s²를, 운동 중에는 그 변화량을 그래프로 보여주는 도구입니다.</p>
+    <div class="info-box tip">
+      <p><strong>측정 모드별 활용</strong><br>
+      <strong>① 중력가속도 측정:</strong> 폰을 평평한 곳에 놓으면 |a| ≈ 9.80 m/s²가 측정됩니다. 자유낙하 시 0에 가까워집니다.<br>
+      <strong>② 기울기에 따른 중력 분해:</strong> 폰을 기울이면 중력 g가 각 축에 g·sinθ, g·cosθ로 분해되어 측정됩니다. 경사면 운동 단원과 연계됩니다.<br>
+      <strong>③ 진동·진자 운동:</strong> 폰을 끈에 매달거나 흔들면 시간에 따른 가속도 변화를 확인할 수 있습니다.</p>
+    </div>
+    <div class="info-box warn">
+      <p><strong>유의사항</strong><br>
+      · iOS 13 이상에서는 권한 허용이 필요합니다.<br>
+      · 일부 기기는 가속도계가 없거나 정확도가 떨어질 수 있습니다.<br>
+      · 폰을 떨어뜨리지 않도록 안전한 환경에서 측정하세요.</p>
+    </div>
+    <div class="input-group">
+      <label class="input-label">측정 모드 선택</label>
+      <div class="count-btns">
+        <button class="count-btn acc-mode-btn sel" data-mode="gravity">🌍 중력 측정</button>
+        <button class="count-btn acc-mode-btn" data-mode="tilt">📐 기울기 분해</button>
+        <button class="count-btn acc-mode-btn" data-mode="vibration">🎢 진동 분석</button>
+      </div>
+    </div>
+    <div class="sound-display" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+      <div class="sd-card" style="background:linear-gradient(135deg,rgba(91,141,239,.1),rgba(123,168,245,.15));border-color:rgba(91,141,239,.25);">
+        <div class="sd-label">x축</div>
+        <div class="sd-value" style="color:#3A5DA8;font-size:1rem;"><span id="acc-x">-</span></div>
+      </div>
+      <div class="sd-card" style="background:linear-gradient(135deg,rgba(91,141,239,.1),rgba(123,168,245,.15));border-color:rgba(91,141,239,.25);">
+        <div class="sd-label">y축</div>
+        <div class="sd-value" style="color:#3A5DA8;font-size:1rem;"><span id="acc-y">-</span></div>
+      </div>
+      <div class="sd-card" style="background:linear-gradient(135deg,rgba(91,141,239,.1),rgba(123,168,245,.15));border-color:rgba(91,141,239,.25);">
+        <div class="sd-label">z축</div>
+        <div class="sd-value" style="color:#3A5DA8;font-size:1rem;"><span id="acc-z">-</span></div>
+      </div>
+      <div class="sd-card" style="background:linear-gradient(135deg,rgba(91,141,239,.15),rgba(123,168,245,.2));border-color:rgba(91,141,239,.35);">
+        <div class="sd-label">|a|</div>
+        <div class="sd-value" style="color:#3A5DA8;font-size:1rem;"><span id="acc-mag">-</span></div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:.72rem;color:var(--fog);margin-bottom:10px;">단위: m/s² · |a| = √(x²+y²+z²)</p>
+    <canvas id="acc-canvas" style="width:100%;height:180px;background:rgba(91,141,239,.04);border-radius:var(--radius-sm);display:block;margin-bottom:12px;"></canvas>
+    <div id="acc-result-summary" style="display:none;">
+      <div class="result-hl" style="margin-bottom:8px;">
+        <div class="rh-label">평균 가속도 크기 |a|</div>
+        <div class="rh-value"><span id="acc-avg-mag">-</span><span class="rh-unit"> m/s²</span></div>
+      </div>
+      <div class="count-info"><span class="ci-label">표준 중력가속도와 오차율</span><span class="ci-value"><span id="acc-err">-</span> %</span></div>
+      <div class="info-box tip" style="margin-top:10px;">
+        <p id="acc-interpret"></p>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-acc-start">▶️ 측정 시작</button>
+    <button class="btn btn-secondary btn-mt" id="btn-acc-stop" style="display:none;">⏹️ 측정 중지 및 결과 보기</button>
+    <button class="btn btn-primary btn-mt" id="btn-acc-save" style="display:none;" disabled>💾 시트에 저장</button>
+    <button class="btn btn-secondary btn-mt" id="acc1-home">🏠 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ CONFIG (NEW: 설정 화면) ═════════════════════ -->
+<div class="screen" id="s-config">
+  <div class="step-header">
+    <button class="back-btn" id="cfg-back">‹</button>
+    <div class="step-info"><div class="step-title">⚙️ 초기 설정</div><div class="step-sub">API 키 · 백엔드 URL 등록</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">설정 정보 입력</div>
+    <p class="card-desc" style="margin-bottom:14px;">아래 두 가지 정보를 입력하면 본 기기에 저장되어 다음부터는 자동으로 불러옵니다. 설정은 외부로 전송되지 않으며, 브라우저의 localStorage에만 저장됩니다.</p>
+
+    <div class="info-box tip">
+      <p><strong>① Gemini API 키 발급 방법</strong><br>
+      · Google AI Studio (aistudio.google.com) 접속<br>
+      · 좌측 메뉴 "Get API key" → "Create API key" 클릭<br>
+      · 발급된 키를 복사해서 아래에 붙여넣기<br>
+      · 무료 플랜으로도 충분히 사용 가능합니다.</p>
+    </div>
+    <div class="input-group">
+      <label class="input-label">🔑 Gemini API 키</label>
+      <input class="inp" type="text" id="cfg-api-key" placeholder="AIza...">
+    </div>
+
+    <div class="info-box tip">
+      <p><strong>② Apps Script 백엔드 URL 받기</strong><br>
+      · Apps Script 에디터 → "배포" → "새 배포"<br>
+      · 유형: "웹 앱" / 액세스 권한: "모든 사용자"<br>
+      · 배포 후 표시되는 URL을 복사해서 아래에 붙여넣기<br>
+      · URL 형식: https://script.google.com/macros/s/.../exec</p>
+    </div>
+    <div class="input-group">
+      <label class="input-label">🔗 Apps Script 백엔드 URL</label>
+      <input class="inp" type="text" id="cfg-backend-url" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+
+    <div class="sep"></div>
+    <button class="btn btn-primary" id="btn-cfg-test">🔌 백엔드 연결 테스트</button>
+    <button class="btn btn-primary btn-mt" id="btn-cfg-save">💾 설정 저장</button>
+    <button class="btn btn-secondary btn-mt" id="btn-cfg-clear">🗑️ 저장된 설정 삭제</button>
+    <button class="btn btn-secondary btn-mt" id="cfg-home">🏠 처음으로</button>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+// ══ CONFIG: 사용자 설정 (localStorage) ════════════════
+var CFG = {
+  apiKey: '',
+  backendUrl: '',
+  load: function() {
+    try {
+      this.apiKey = localStorage.getItem('sci_apiKey') || '';
+      this.backendUrl = localStorage.getItem('sci_backendUrl') || '';
+    } catch(e) {}
+  },
+  save: function(apiKey, backendUrl) {
+    try {
+      localStorage.setItem('sci_apiKey', apiKey || '');
+      localStorage.setItem('sci_backendUrl', backendUrl || '');
+      this.apiKey = apiKey || '';
+      this.backendUrl = backendUrl || '';
+      return true;
+    } catch(e) { return false; }
+  },
+  clear: function() {
+    try {
+      localStorage.removeItem('sci_apiKey');
+      localStorage.removeItem('sci_backendUrl');
+      this.apiKey = '';
+      this.backendUrl = '';
+    } catch(e) {}
+  },
+  isValid: function() {
+    return !!(this.apiKey && this.backendUrl);
+  }
+};
+CFG.load();
+
+// ══ 백엔드 호출 헬퍼 ═════════════════════════════════
+async function callBackend(action, payload) {
+  if (!CFG.backendUrl) {
+    return { success: false, error: '백엔드 URL이 설정되지 않았습니다. 설정 화면에서 입력해 주세요.' };
+  }
+  try {
+    var res = await fetch(CFG.backendUrl, {
+      method: 'POST',
+      // Apps Script는 application/json을 막으므로 text/plain으로 보내고 본문에 JSON
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, payload: payload || {} }),
+      redirect: 'follow'
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch(e) {
+    return { success: false, error: e.message || String(e) };
+  }
+}
+
+// ══ Gemini API 직접 호출 (브라우저에서) ══════════════
+async function callGeminiVision(imageB64, mimeType, promptText, maxTokens) {
+  if (!CFG.apiKey) throw new Error('Gemini API 키가 설정되지 않았습니다.');
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + CFG.apiKey;
+  var body = {
+    contents: [{ parts: [
+      { inline_data: { mime_type: mimeType || 'image/jpeg', data: imageB64 } },
+      { text: promptText }
+    ]}],
+    generationConfig: { temperature: 0.1, maxOutputTokens: maxTokens || 1024 }
+  };
+  var res = await fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  var json = await res.json();
+  if (json.error) throw new Error(json.error.message);
+  return json.candidates[0].content.parts[0].text.trim();
+}
+
+async function callGeminiMultiVision(framesData, promptText, maxTokens) {
+  if (!CFG.apiKey) throw new Error('Gemini API 키가 설정되지 않았습니다.');
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + CFG.apiKey;
+  var parts = [];
+  framesData.forEach(function(f, i) {
+    parts.push({ inline_data: { mime_type: 'image/jpeg', data: f.base64 } });
+    parts.push({ text: '프레임 ' + (i + 1) + ' (시간: ' + f.time.toFixed(3) + 's)' });
+  });
+  parts.push({ text: promptText });
+  var body = {
+    contents: [{ parts: parts }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: maxTokens || 2048 }
+  };
+  var res = await fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  var json = await res.json();
+  if (json.error) throw new Error(json.error.message);
+  return json.candidates[0].content.parts[0].text.trim();
+}
+
+function parseJsonFromGemini(raw) {
+  var cleaned = raw.replace(/```json|```/g, '').trim();
+  var arr = cleaned.match(/\[[\s\S]*\]/);
+  var obj = cleaned.match(/\{[\s\S]*\}/);
+  return JSON.parse(arr ? arr[0] : (obj ? obj[0] : cleaned));
+}
+function smoothArray(arr, win) {
+  var w = win || 3, half = Math.floor(w/2), out = [];
+  for (var i=0; i<arr.length; i++) {
+    var s=0,n=0;
+    for (var j=-half; j<=half; j++) { var k=i+j; if (k>=0&&k<arr.length) {s+=arr[k];n++;} }
+    out.push(s/n);
+  }
+  return out;
+}
+
+// ══ STATE ═══════════════════════════════════════════
+var ST={
+  light:{mode:'default',distances:[10,20,30],images:[[],[],[]],lux:[[],[],[]],photoMethod:'camera'},
+  pressure:{count:5,baseline:{pressure:1013.25,altitude:0,location:'-'},measurements:[],average:null,height:null},
+  pend:{frameCount:20,videoFile:null,frames:[],length:0,result:null,photoMethod:'camera'},
+  motion:{frameCount:15,videoFile:null,frames:[],realCm:null,pixelLen:null,result:null,photoMethod:'camera'},
+  sound:{audioCtx:null,analyser:null,mic:null,animId:null,stream:null,currentFreq:0,currentAmp:0,log:[]},
+  color:{img:null,r:0,g:0,b:0,ph:'-',photoMethod:'camera'},
+  ssp:{audioCtx:null,stream:null,distance:0,temperature:20,deltaMs:0,speed:0,theory:0,err:0,recording:false},
+  accel:{mode:'gravity',running:false,samples:[],handler:null,startTime:0,duration:10000,animId:null},
+  charts:{},
+  objectUrls:[]
+};
+
+// ══ BUBBLES 효과 ════════════════════════════════════
+(function(){
+  try{
+    var c=document.getElementById('bubbles');if(!c)return;
+    for(var i=0;i<14;i++){
+      var b=document.createElement('div');b.className='bubble';
+      var size=8+Math.random()*22;
+      b.style.width=size+'px';b.style.height=size+'px';
+      b.style.left=(Math.random()*100)+'%';
+      b.style.animationDuration=(10+Math.random()*14)+'s';
+      b.style.animationDelay=(Math.random()*14)+'s';
+      c.appendChild(b);
+    }
+  }catch(e){}
+})();
+
+// ══ UTILS ════════════════════════════════════════════
+function get(id){return document.getElementById(id);}
+function showScreen(id){
+  try{
+    var all=document.querySelectorAll('.screen');
+    for(var i=0;i<all.length;i++)all[i].classList.remove('active');
+    var el=get(id);if(el)el.classList.add('active');
+    try{window.scrollTo(0,0);}catch(e){}
+  }catch(e){console.error(e);}
+}
+function showLoad(msg){var e=get('loading'),t=get('loading-msg');if(t)t.innerHTML=msg||'분석 중입니다.<br>잠시만 기다려 주세요.';if(e)e.classList.add('on');}
+function hideLoad(){var e=get('loading');if(e)e.classList.remove('on');}
+function toast(msg,ms){var t=get('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},ms||2600);}
+function r2(n){return Math.round(n*100)/100;}
+function calcAvg(arr){var v=arr.filter(function(x){return x!=null&&!isNaN(x);});if(!v.length)return null;return v.reduce(function(a,b){return a+b;},0)/v.length;}
+function destroyChart(k){if(ST.charts[k]){try{ST.charts[k].destroy();}catch(e){}delete ST.charts[k];}}
+function trackObjectUrl(url){ST.objectUrls.push(url);return url;}
+function releaseObjectUrl(url){try{URL.revokeObjectURL(url);}catch(e){}var i=ST.objectUrls.indexOf(url);if(i>=0)ST.objectUrls.splice(i,1);}
+
+// ══ NAVIGATION ══════════════════════════════════════
+function goToLight(){ST.light={mode:'default',distances:[10,20,30],images:[[],[],[]],lux:[[],[],[]],photoMethod:'camera'};showScreen('s-l1');get('oc-default').classList.add('selected');get('oc-custom').classList.remove('selected');get('mode-default').style.display='block';get('mode-custom').style.display='none';selectPhotoMethod('camera');}
+function goToPressure(){showScreen('s-p1');loadBaseline();}
+function goToPend(){ST.pend={frameCount:20,videoFile:null,frames:[],length:0,result:null,photoMethod:'camera'};showScreen('s-pend1');resetVideoArea('pend');selectPendPhotoMethod('camera');}
+function goToMotion(){ST.motion={frameCount:15,videoFile:null,frames:[],realCm:null,pixelLen:null,result:null,photoMethod:'camera'};showScreen('s-motion1');resetVideoArea('mot');selectMotPhotoMethod('camera');}
+function goToSound(){showScreen('s-sound1');resetSoundUI();}
+function goToColor(){showScreen('s-color1');resetColorUI();selectColorPhotoMethod('camera');}
+function goToSoundSpeed(){showScreen('s-soundspeed1');resetSSPUI();}
+function goToAccel(){showScreen('s-accel1');resetAccelUI();}
+
+function resetVideoArea(prefix){
+  var vp=get(prefix+'-video-preview'),fw=get(prefix+'-frames-wrap'),fs=get(prefix+'-frames');
+  if(vp){vp.style.display='none';if(vp.src)releaseObjectUrl(vp.src);vp.src='';}
+  if(fw)fw.style.display='none';
+  if(fs)fs.innerHTML='';
+  var btn=get('btn-'+prefix+'-analyze');if(btn)btn.disabled=true;
+}
+
+// ══ PHOTO METHOD TOGGLES ═════════════════════════════
+function selectPhotoMethod(m){ST.light.photoMethod=m;get('pm-camera').classList.toggle('sel',m==='camera');get('pm-gallery').classList.toggle('sel',m==='gallery');}
+function selectPendPhotoMethod(m){ST.pend.photoMethod=m;get('pend-pm-camera').classList.toggle('sel',m==='camera');get('pend-pm-gallery').classList.toggle('sel',m==='gallery');var i=get('pend-video-file');if(i){if(m==='camera')i.setAttribute('capture','environment');else i.removeAttribute('capture');}}
+function selectMotPhotoMethod(m){ST.motion.photoMethod=m;get('mot-pm-camera').classList.toggle('sel',m==='camera');get('mot-pm-gallery').classList.toggle('sel',m==='gallery');var i=get('mot-video-file');if(i){if(m==='camera')i.setAttribute('capture','environment');else i.removeAttribute('capture');}}
+function selectColorPhotoMethod(m){ST.color.photoMethod=m;get('color-pm-camera').classList.toggle('sel',m==='camera');get('color-pm-gallery').classList.toggle('sel',m==='gallery');var i=get('color-file');if(i){if(m==='camera')i.setAttribute('capture','environment');else i.removeAttribute('capture');}}
+
+// ══ LIGHT ════════════════════════════════════════════
+function selectMode(m){ST.light.mode=m;get('oc-default').classList.toggle('selected',m==='default');get('oc-custom').classList.toggle('selected',m==='custom');get('mode-default').style.display=m==='default'?'block':'none';get('mode-custom').style.display=m==='custom'?'block':'none';}
+function doL1Next(){
+  if(ST.light.mode==='custom'){var d1=parseFloat(get('cd1').value),d2=parseFloat(get('cd2').value),d3=parseFloat(get('cd3').value);if(!d1||!d2||!d3){toast('❗ 거리 3가지를 모두 입력하세요.');return;}ST.light.distances=[d1,d2,d3];}
+  else{ST.light.distances=[10,20,30];}
+  ST.light.images=[[],[],[]];ST.light.lux=[[],[],[]];buildUploadUI();showScreen('s-l2');
+}
+function buildUploadUI(){
+  var card=get('upload-card'),dists=ST.light.distances;
+  var captureAttr=(ST.light.photoMethod==='camera')?' capture="environment"':'';
+  var h='<div class="card-title" style="margin-bottom:14px;">📷 거리별 사진 업로드</div>';
+  h+='<p class="card-desc" style="margin-bottom:16px;">각 거리에서 3장씩 사진을 업로드합니다. 사진 수가 많을수록 평균값의 정확도가 높아집니다.</p>';
+  for(var di=0;di<3;di++){
+    h+='<div class="photo-section"><div class="photo-section-title"><span>거리 '+(di+1)+'</span><span class="dist-badge">'+dists[di]+'cm</span></div><div class="photo-slots">';
+    for(var pi=0;pi<3;pi++){h+='<div class="photo-slot" id="slot-'+di+'-'+pi+'"><input type="file" accept="image/*"'+captureAttr+' id="file-'+di+'-'+pi+'"><div class="slot-placeholder"><span class="slot-icon">📸</span><span class="slot-num">'+(pi+1)+'번째</span></div></div>';}
+    h+='</div></div>';if(di<2)h+='<div class="sep"></div>';
+  }
+  card.innerHTML=h;
+  for(var di2=0;di2<3;di2++)for(var pi2=0;pi2<3;pi2++)(function(d,p){var inp=get('file-'+d+'-'+p);if(inp)inp.addEventListener('change',function(e){handlePhoto(e,d,p);});})(di2,pi2);
+  updateAnalyzeBtn();
+}
+function handlePhoto(evt,di,pi){
+  var file=evt.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  var captureAttr=(ST.light.photoMethod==='camera')?' capture="environment"':'';
+  reader.onload=function(e){
+    var full=e.target.result,b64=full.split(',')[1];
+    ST.light.images[di][pi]={base64:b64,mimeType:file.type};ST.light.lux[di][pi]=null;
+    var slot=get('slot-'+di+'-'+pi);
+    if(slot){slot.innerHTML='<input type="file" accept="image/*"'+captureAttr+' id="file-'+di+'-'+pi+'"><img src="'+full+'" alt="">';var inp=get('file-'+di+'-'+pi);if(inp)(function(d,p){inp.addEventListener('change',function(e2){handlePhoto(e2,d,p);});})(di,pi);}
+    updateAnalyzeBtn();
+  };reader.readAsDataURL(file);
+}
+function countUp(){var n=0;for(var di=0;di<3;di++)for(var pi=0;pi<3;pi++)if(ST.light.images[di][pi])n++;return n;}
+function updateAnalyzeBtn(){var n=countUp(),btn=get('btn-analyze');if(!btn)return;btn.disabled=(n===0);btn.textContent='🔍 AI 분석 시작 ('+n+'/9장)';}
+function doAnalyze(){
+  if(!CFG.isValid()){toast('❗ 먼저 설정 화면에서 API 키와 백엔드 URL을 입력하세요.',4000);return;}
+  var toSend=[];for(var di=0;di<3;di++)for(var pi=0;pi<3;pi++)if(ST.light.images[di][pi])toSend.push({base64:ST.light.images[di][pi].base64,mimeType:ST.light.images[di][pi].mimeType,distanceIndex:di,photoIndex:pi});
+  if(!toSend.length){toast('❗ 사진을 먼저 업로드하세요.');return;}
+  showLoad('🔬 AI가 조도를 분석하고 있습니다.<br>잠시만 기다려 주세요.');
+  toSend.forEach(function(item){var slot=get('slot-'+item.distanceIndex+'-'+item.photoIndex);if(slot){var b=document.createElement('div');b.className='analyzing-badge';b.id='badge-'+item.distanceIndex+'-'+item.photoIndex;b.innerHTML='<div class="spinner"></div><div style="font-size:.6rem;color:#666;">분석중</div>';slot.appendChild(b);}});
+
+  var prompt='이 이미지의 가장 밝은 광원 조도를 럭스(lux)로 추정하세요.\n기준: 촛불근거리~1000lux, 전구근거리~10000lux, 스마트폰플래시~50000lux\n정수 하나만 반환. 예: 12450';
+  // 순차 처리 (rate limit 회피)
+  (async function(){
+    var results=[];
+    for(var i=0;i<toSend.length;i++){
+      var item=toSend[i];
+      try{
+        var text=await callGeminiVision(item.base64,item.mimeType,prompt,50);
+        var lux=Math.round(parseFloat(text.replace(/[^0-9.]/g,'')));
+        results.push({distanceIndex:item.distanceIndex,photoIndex:item.photoIndex,lux:isNaN(lux)?null:lux});
+      }catch(e){
+        results.push({distanceIndex:item.distanceIndex,photoIndex:item.photoIndex,lux:null,error:e.message});
+      }
+      // 진행 상황 UI 업데이트
+      var r=results[results.length-1];
+      var di=r.distanceIndex,pi=r.photoIndex;ST.light.lux[di][pi]=r.lux;
+      var badge=get('badge-'+di+'-'+pi);if(badge)badge.remove();
+      var slot=get('slot-'+di+'-'+pi);
+      if(slot&&r.lux!=null){var ov=document.createElement('div');ov.className='lux-overlay';ov.textContent=r.lux.toLocaleString()+' lx';slot.appendChild(ov);slot.classList.add('analyzed');}
+      await new Promise(function(rs){setTimeout(rs,400);});
+    }
+    hideLoad();
+    var fails=results.filter(function(r){return r.lux==null;}).length;
+    if(fails===results.length){toast('❌ 모든 분석 실패: API 키를 확인하세요.',5000);return;}
+    toast('✅ 분석 완료'+(fails?' ('+fails+'장 실패)':''));
+    setTimeout(function(){buildLightResults();},400);
+  })();
+}
+function buildLightResults(){
+  var dists=ST.light.distances,lux=ST.light.lux,avgs=[];
+  for(var di=0;di<3;di++)avgs.push(r2(calcAvg(lux[di])||0));
+  var tbl=get('light-table');
+  var h='<thead><tr><th>거리(cm)</th><th>사진1</th><th>사진2</th><th>사진3</th><th>평균(lx)</th></tr></thead><tbody>';
+  for(var i=0;i<3;i++){h+='<tr><td><strong>'+dists[i]+'</strong></td>';for(var p=0;p<3;p++)h+='<td>'+(lux[i][p]?lux[i][p].toLocaleString():'-')+'</td>';h+='<td class="avg-cell">'+avgs[i].toLocaleString()+'</td></tr>';}
+  tbl.innerHTML=h+'</tbody>';showScreen('s-l3');buildLightCharts(dists,avgs);
+  try{callBackend('saveLight',{distances:dists,lux:lux,averages:avgs,inputMode:ST.light.mode});}catch(e){}
+}
+function buildLightCharts(dists,avgs){
+  if(typeof Chart==='undefined'){setTimeout(function(){buildLightCharts(dists,avgs);},800);return;}
+  var opts={responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(91,141,239,.08)'},ticks:{color:'#5A6B85',font:{size:10}}},y:{grid:{color:'rgba(91,141,239,.08)'},ticks:{color:'#5A6B85',font:{size:10}}}}};
+  destroyChart('c1');ST.charts.c1=new Chart(get('c-dist'),{type:'line',data:{labels:dists.map(function(d){return d+'cm';}),datasets:[{data:avgs,fill:true,backgroundColor:'rgba(245,206,94,.18)',borderColor:'rgba(240,189,63,1)',pointBackgroundColor:'rgba(240,189,63,1)',tension:.4,pointRadius:5}]},options:opts});
+  destroyChart('c2');ST.charts.c2=new Chart(get('c-dist2'),{type:'scatter',data:{datasets:[{data:dists.map(function(d,i){return{x:d*d,y:avgs[i]};}),backgroundColor:'rgba(245,206,94,.7)',borderColor:'rgba(240,189,63,1)',pointRadius:7}]},options:opts});
+  destroyChart('c3');ST.charts.c3=new Chart(get('c-inv2'),{type:'scatter',data:{datasets:[{data:dists.map(function(d,i){return{x:r2(1/(d*d)),y:avgs[i]};}),backgroundColor:'rgba(91,141,239,.7)',borderColor:'rgba(91,141,239,1)',pointRadius:7}]},options:opts});
+}
+function doLightPDF(){if(typeof html2pdf==='undefined'){toast('⏳ PDF 라이브러리 로딩 중입니다.');return;}showLoad('PDF 생성 중입니다.');html2pdf().set({margin:10,filename:'빛의밝기_탐구결과.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(get('pdf-light')).save().then(function(){hideLoad();toast('✅ PDF 저장 완료');});}
+
+// ══ PRESSURE ═════════════════════════════════════════
+function loadBaseline(){
+  get('bl-pressure').textContent='불러오는 중...';
+  (async function(){
+    var d=await callBackend('getBaseline');
+    if(d&&d.success){ST.pressure.baseline=d;get('bl-pressure').textContent=d.pressure+' hPa';get('bl-location').textContent=d.location||'-';get('bl-altitude').textContent=(d.altitude||0)+' m';}
+    else get('bl-pressure').textContent='1013.25 hPa (기본값)';
+  })();
+}
+function selectCount(n){ST.pressure.count=n;var btns=document.querySelectorAll('#count-btns .count-btn');for(var i=0;i<btns.length;i++){if(parseInt(btns[i].getAttribute('data-n'))===n)btns[i].classList.add('sel');else btns[i].classList.remove('sel');}}
+function doP1Next(){if(!ST.pressure.count){toast('❗ 측정 횟수를 선택하세요.');return;}buildPInputs();showScreen('s-p2');}
+function buildPInputs(){
+  var n=ST.pressure.count,el=get('p-inputs'),pt=get('p-total');if(pt)pt.textContent=n;
+  var h='';for(var i=0;i<n;i++)h+='<div class="pressure-item"><span class="pressure-num">'+(i+1)+'회</span><input class="pressure-val" type="text" inputmode="decimal" id="pv'+i+'" placeholder="-"></div>';
+  el.innerHTML=h;
+  for(var j=0;j<n;j++)(function(idx){var inp=get('pv'+idx);if(inp)inp.addEventListener('input',updatePAvg);})(j);
+}
+function updatePAvg(){
+  var n=ST.pressure.count,vals=[];
+  for(var i=0;i<n;i++){var inp=get('pv'+i);if(!inp)continue;var v=parseFloat(inp.value);if(!isNaN(v)&&v>0){vals.push(v);inp.classList.add('filled');}}
+  var pf=get('p-filled'),ca=get('cur-avg'),bc=get('btn-calc');
+  if(pf)pf.textContent=vals.length;
+  if(vals.length>0){var a=r2(vals.reduce(function(x,y){return x+y;},0)/vals.length);if(ca)ca.textContent=a;ST.pressure.measurements=vals;ST.pressure.average=a;}else{if(ca)ca.textContent='-';}
+  if(bc)bc.disabled=(vals.length<5);
+}
+function doCalc(){
+  var a=ST.pressure.average,base=ST.pressure.baseline;if(!a){toast('❗ 기압값을 입력하세요.');return;}
+  // ISA 공식으로 브라우저에서 직접 계산 (백엔드 호출 불필요)
+  var h=r2(44330*(1-Math.pow(a/base.pressure,1/5.255))+(base.altitude||0));
+  ST.pressure.height=h;
+  buildPressureResults();
+}
+function buildPressureResults(){
+  var h=ST.pressure.height,a=ST.pressure.average,base=ST.pressure.baseline,baseP=base.pressure,baseAlt=base.altitude||0;
+  get('r-height').textContent=h.toLocaleString();get('r-avg').textContent=a;get('r-base').textContent=baseP;get('r-alt').textContent=baseAlt;
+  var fe=get('r-floor');if(fe){var rel=h-baseAlt,FLOOR=3.3;if(rel<=0)fe.textContent='지하 약 '+Math.abs(Math.round(rel/FLOOR))+'층 수준';else{var fl=Math.round(rel/FLOOR)+1;fe.textContent=fl<=1?'약 1층 수준':'약 '+fl+'층 수준 (3.3m/층 기준)';}fe.style.display='inline-block';}
+  var tbl=get('p-table');var th='<thead><tr><th>#</th><th>기압값(hPa)</th><th>편차</th></tr></thead><tbody>';
+  ST.pressure.measurements.forEach(function(v,i){var d=r2(v-a),ds=d>=0?'+'+d:''+d,color=Math.abs(d)>1?'#E89B5E':'#5BAE7F';th+='<tr><td>'+(i+1)+'</td><td>'+v+'</td><td style="color:'+color+'">'+ds+'</td></tr>';});
+  th+='<tr><td colspan="2" style="font-weight:700;color:#5B8DEF;">평균</td><td style="font-weight:700;color:#5B8DEF;">'+a+'</td></tr></tbody>';tbl.innerHTML=th;
+  showScreen('s-p3');buildPChart(h,a,baseP,baseAlt);
+  try{callBackend('savePressure',{measurements:ST.pressure.measurements,average:a,baselinePressure:baseP,calculatedHeight:h});}catch(e){}
+}
+function buildPChart(h,a,baseP,baseAlt){
+  if(typeof Chart==='undefined'){setTimeout(function(){buildPChart(h,a,baseP,baseAlt);},800);return;}
+  var heights=[],pressures=[],s2=Math.min(baseAlt-30,h-60),e2=Math.max(h+80,baseAlt+60);
+  for(var hh=s2;hh<=e2;hh+=10){heights.push(hh);pressures.push(r2(baseP*Math.pow(1-(hh-baseAlt)/44330,5.255)));}
+  destroyChart('cp');
+  ST.charts.cp=new Chart(get('c-ph'),{type:'line',data:{labels:heights.map(function(v){return v+'m';}),datasets:[{label:'기압(hPa)',data:pressures,fill:true,backgroundColor:'rgba(123,200,229,.14)',borderColor:'rgba(91,180,216,.9)',tension:.4,pointRadius:0},{label:'현재 위치',data:heights.map(function(hh){return Math.abs(hh-h)<8?a:null;}),backgroundColor:'rgba(245,206,94,1)',borderColor:'rgba(240,189,63,1)',type:'scatter',pointRadius:8}]},options:{responsive:true,plugins:{legend:{display:true,labels:{color:'#5A6B85',font:{size:10}}}},scales:{x:{ticks:{color:'#5A6B85',font:{size:9},maxTicksLimit:8}},y:{ticks:{color:'#5A6B85',font:{size:9}}}}}});
+}
+function doPPDF(){if(typeof html2pdf==='undefined'){toast('⏳ PDF 로딩 중');return;}showLoad('PDF 생성 중');html2pdf().set({margin:10,filename:'기압_높이탐구결과.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(get('pdf-pressure')).save().then(function(){hideLoad();toast('✅ 저장 완료');});}
+
+// ══ VIDEO FRAME EXTRACTION ═══════════════════════════
+function extractVideoFrames(file,numFrames,onComplete){
+  var video=document.createElement('video');
+  video.preload='metadata';video.muted=true;video.playsInline=true;
+  var url=trackObjectUrl(URL.createObjectURL(file));video.src=url;
+  var canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+  video.onloadedmetadata=function(){
+    var vw=video.videoWidth||320,vh=video.videoHeight||180,maxH=360,ratio=vw/vh;
+    canvas.height=maxH;canvas.width=Math.round(maxH*ratio);
+    var dur=video.duration||0;
+    if(!dur||numFrames<1){releaseObjectUrl(url);onComplete([],dur);return;}
+    var times=[],n=Math.max(2,numFrames);
+    for(var i=0;i<n;i++)times.push(i*(dur/(n-1)));
+    var frames=[],idx=0;
+    function next(){if(idx>=times.length){releaseObjectUrl(url);onComplete(frames,dur);return;}video.currentTime=times[idx];}
+    video.onseeked=function(){
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      var b64=canvas.toDataURL('image/jpeg',0.75).split(',')[1];
+      frames.push({base64:b64,time:times[idx],index:idx});
+      idx++;next();
+    };
+    video.onerror=function(){releaseObjectUrl(url);onComplete(frames,dur);};
+    next();
+  };
+  video.onerror=function(){releaseObjectUrl(url);onComplete([],0);};
+}
+function showFrameStrip(prefix,frames){
+  var wrap=get(prefix+'-frames-wrap'),strip=get(prefix+'-frames');
+  if(!wrap||!strip)return;wrap.style.display='block';strip.innerHTML='';
+  frames.forEach(function(f,i){if(i%2===0){var img=document.createElement('img');img.className='frame-thumb';img.src='data:image/jpeg;base64,'+f.base64;strip.appendChild(img);}});
+}
+
+// ══ PENDULUM ═════════════════════════════════════════
+function initPendVideoUpload(){
+  var inp=get('pend-video-file');if(!inp)return;
+  inp.addEventListener('change',function(e){
+    var file=e.target.files[0];if(!file)return;
+    ST.pend.videoFile=file;
+    var vp=get('pend-video-preview');if(vp.src)releaseObjectUrl(vp.src);
+    vp.src=trackObjectUrl(URL.createObjectURL(file));vp.style.display='block';
+    showLoad('영상에서 프레임을 추출하는 중입니다.');
+    extractVideoFrames(file,ST.pend.frameCount,function(frames){
+      hideLoad();ST.pend.frames=frames;showFrameStrip('pend',frames);
+      get('btn-pend-analyze').disabled=(frames.length===0);
+      toast('✅ '+frames.length+'장 프레임 추출 완료');
+    });
+  });
+}
+function setPendFrameCount(n){ST.pend.frameCount=n;document.querySelectorAll('.pend-frame-btn').forEach(function(b){if(parseInt(b.getAttribute('data-n'))===n)b.classList.add('sel');else b.classList.remove('sel');});}
+function doPendAnalyze(){
+  if(!CFG.isValid()){toast('❗ 먼저 설정 화면에서 API 키와 백엔드 URL을 입력하세요.',4000);return;}
+  var L=parseFloat(get('pend-length').value);
+  if(!L||L<=0){toast('❗ 진자 길이를 입력하세요.');return;}
+  if(!ST.pend.frames.length){toast('❗ 영상을 먼저 업로드하세요.');return;}
+  ST.pend.length=L;
+  showLoad('🪀 AI가 진자 운동을 분석 중입니다.<br>주기를 검출하고 있습니다.');
+
+  var prompt='위 '+ST.pend.frames.length+'장의 진자 운동 사진에서 각 프레임의 진자 추(bob) 위치를 분석하세요.\n'+
+    '화면 가로 기준 0(왼쪽끝)~1(오른쪽끝)로 추의 가로 위치(x)를 추정합니다.\n'+
+    '좌우 흔들림에 따라 값이 변해야 합니다.\n'+
+    '반드시 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):\n'+
+    '[{"frame":1,"time":0.00,"pos":0.50},{"frame":2,"time":0.10,"pos":0.55}]';
+
+  (async function(){
+    try{
+      var raw=await callGeminiMultiVision(ST.pend.frames,prompt,2048);
+      var posData=parseJsonFromGemini(raw);
+      var rawPos=posData.map(function(d){return d.pos;});
+      var positions=smoothArray(rawPos,3);
+      var times=posData.map(function(d){return d.time;});
+      var smoothed=posData.map(function(d,i){return {frame:d.frame,time:d.time,pos:positions[i],rawPos:rawPos[i]};});
+      var peaks=[];
+      for(var i=1;i<positions.length-1;i++){
+        if((positions[i]>positions[i-1]&&positions[i]>positions[i+1])||
+           (positions[i]<positions[i-1]&&positions[i]<positions[i+1])){
+          peaks.push({i:i,time:times[i],pos:positions[i]});
+        }
+      }
+      var period=null;
+      if(peaks.length>=2){
+        var halfP=[];
+        for(var j=1;j<peaks.length;j++)halfP.push(peaks[j].time-peaks[j-1].time);
+        var avgH=halfP.reduce(function(a,b){return a+b;},0)/halfP.length;
+        period=Math.round(avgH*2*1000)/1000;
+      }
+      var gravity=null;
+      if(period&&L>0){
+        var Lm=L/100;
+        gravity=Math.round(4*Math.PI*Math.PI*Lm/(period*period)*100)/100;
+      }
+      hideLoad();
+      ST.pend.result={success:true,posData:smoothed,peaks:peaks,period:period,gravity:gravity};
+      buildPendResults();
+    }catch(e){hideLoad();toast('❌ 분석 오류: '+(e.message||e),5000);}
+  })();
+}
+function buildPendResults(){
+  var res=ST.pend.result,g=res.gravity,T=res.period,L=ST.pend.length;
+  get('pend-g').textContent=g?g.toFixed(3):'-';
+  get('pend-period').textContent=T?T.toFixed(3):'-';
+  get('pend-length-r').textContent=L;
+  var errVal=null;
+  if(g){errVal=Math.abs((g-9.80)/9.80*100);get('pend-error').textContent=errVal.toFixed(1);}else get('pend-error').textContent='-';
+  var interp=get('pend-interpret');
+  if(interp&&g){
+    var diff=g-9.80;
+    var msg='측정된 중력가속도 g = '+g.toFixed(3)+' m/s²로, 표준값(9.80 m/s²)과 비교했을 때 ';
+    msg+=Math.abs(diff)<0.1?'거의 일치합니다.':(diff>0?'약간 크게':'약간 작게')+' 측정되었습니다. ';
+    msg+='진자 길이 '+L+'cm, 주기 '+T.toFixed(3)+'s를 이용해 g = 4π²L/T² 공식으로 계산하였습니다.';
+    interp.textContent=msg;
+  } else if(interp){interp.textContent='주기를 정확히 검출하지 못했습니다. 더 긴 영상(2~3주기 이상)으로 다시 시도해 보세요.';}
+  if(res.posData&&typeof Chart!=='undefined'){
+    destroyChart('cpend');
+    ST.charts.cpend=new Chart(get('c-pend-pos'),{type:'line',data:{labels:res.posData.map(function(d){return r2(d.time)+'s';}),datasets:[{label:'추 위치(평활화)',data:res.posData.map(function(d){return d.pos;}),borderColor:'rgba(63,184,160,.9)',backgroundColor:'rgba(94,201,181,.13)',fill:true,tension:.4,pointRadius:3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#5A6B85',font:{size:9},maxTicksLimit:10}},y:{min:0,max:1,ticks:{color:'#5A6B85',font:{size:9}}}}}});
+  }
+  showScreen('s-pend2');
+  try{callBackend('savePendulum',{length:L,period:T,gravity:g,errorPercent:errVal!=null?r2(errVal):'',frameCount:ST.pend.frames.length});}catch(e){}
+}
+function doPendPDF(){if(typeof html2pdf==='undefined'){toast('⏳ PDF 로딩 중');return;}showLoad('PDF 생성 중');html2pdf().set({margin:10,filename:'진자운동_탐구결과.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(get('pdf-pend')).save().then(function(){hideLoad();toast('✅ 저장 완료');});}
+
+// ══ MOTION ═══════════════════════════════════════════
+function initMotVideoUpload(){
+  var inp=get('mot-video-file');if(!inp)return;
+  inp.addEventListener('change',function(e){
+    var file=e.target.files[0];if(!file)return;
+    ST.motion.videoFile=file;
+    var vp=get('mot-video-preview');if(vp.src)releaseObjectUrl(vp.src);
+    vp.src=trackObjectUrl(URL.createObjectURL(file));vp.style.display='block';
+    showLoad('영상에서 프레임을 추출하는 중입니다.');
+    extractVideoFrames(file,ST.motion.frameCount,function(frames){
+      hideLoad();ST.motion.frames=frames;showFrameStrip('mot',frames);
+      get('btn-mot-analyze').disabled=(frames.length===0);
+      toast('✅ '+frames.length+'장 프레임 추출 완료');
+    });
+  });
+}
+function setMotFrameCount(n){ST.motion.frameCount=n;document.querySelectorAll('.mot-frame-btn').forEach(function(b){if(parseInt(b.getAttribute('data-n'))===n)b.classList.add('sel');else b.classList.remove('sel');});}
+function doMotAnalyze(){
+  if(!CFG.isValid()){toast('❗ 먼저 설정 화면에서 API 키와 백엔드 URL을 입력하세요.',4000);return;}
+  if(!ST.motion.frames.length){toast('❗ 영상을 먼저 업로드하세요.');return;}
+  var realCm=parseFloat(get('mot-real-cm').value)||0,pixelLen=parseFloat(get('mot-pixel').value)||0;
+  ST.motion.realCm=realCm;ST.motion.pixelLen=pixelLen;
+  showLoad('🚀 AI가 물체 운동을 분석 중입니다.<br>속력을 계산하고 있습니다.');
+
+  var prompt='위 '+ST.motion.frames.length+'장의 물체 운동 사진에서 각 프레임의 물체 중심 위치를 분석하세요.\n'+
+    '화면 내 비율: x는 0(왼쪽)~1(오른쪽), y는 0(위)~1(아래)\n'+
+    '반드시 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):\n'+
+    '[{"frame":1,"time":0.000,"x":0.20,"y":0.50},{"frame":2,"time":0.033,"x":0.25,"y":0.50}]';
+
+  (async function(){
+    try{
+      var raw=await callGeminiMultiVision(ST.motion.frames,prompt,2048);
+      var posData=parseJsonFromGemini(raw);
+      var scale=1;
+      if(realCm&&pixelLen){scale=(realCm/pixelLen)*1000;}
+      var motionData=[];
+      for(var i=0;i<posData.length;i++){
+        var p=posData[i],vx=null,vy=null,speed=null;
+        if(i>0&&i<posData.length-1){
+          var dt1=posData[i].time-posData[i-1].time;
+          var dt2=posData[i+1].time-posData[i].time;
+          if(dt1>0&&dt2>0){
+            vx=((posData[i+1].x-posData[i-1].x)/(dt1+dt2))*scale;
+            vy=((posData[i+1].y-posData[i-1].y)/(dt1+dt2))*scale;
+            speed=Math.round(Math.sqrt(vx*vx+vy*vy)*100)/100;
+            vx=Math.round(vx*100)/100;vy=Math.round(vy*100)/100;
+          }
+        }
+        motionData.push({frame:p.frame,time:p.time,x:p.x,y:p.y,vx:vx,vy:vy,speed:speed});
+      }
+      for(var j=1;j<motionData.length-1;j++){
+        var dt=(motionData[j+1].time-motionData[j-1].time)/2;
+        if(dt>0&&motionData[j-1].vx!==null&&motionData[j+1].vx!==null){
+          motionData[j].ax=Math.round((motionData[j+1].vx-motionData[j-1].vx)/(2*dt)*100)/100;
+          motionData[j].ay=Math.round((motionData[j+1].vy-motionData[j-1].vy)/(2*dt)*100)/100;
+        }
+      }
+      hideLoad();
+      ST.motion.result={success:true,motionData:motionData,scale:scale};
+      buildMotionResults();
+    }catch(e){hideLoad();toast('❌ 분석 오류: '+(e.message||e),5000);}
+  })();
+}
+function buildMotionResults(){
+  var data=ST.motion.result.motionData;
+  var speeds=data.filter(function(d){return d.speed!=null;}).map(function(d){return d.speed;});
+  var maxS=speeds.length?Math.max.apply(null,speeds):0;
+  var avgS=speeds.length?r2(speeds.reduce(function(a,b){return a+b;},0)/speeds.length):0;
+  get('mot-max-speed').textContent=r2(maxS).toFixed(3);
+  get('mot-avg-speed').textContent=avgS.toFixed(3);
+  get('mot-frames-count').textContent=data.length;
+  var tbl=get('mot-table');
+  var h='<thead><tr><th>프레임</th><th>시간(s)</th><th>x비율</th><th>y비율</th><th>속력</th></tr></thead><tbody>';
+  data.forEach(function(d){h+='<tr><td>'+d.frame+'</td><td>'+r2(d.time).toFixed(3)+'</td><td>'+r2(d.x).toFixed(3)+'</td><td>'+r2(d.y).toFixed(3)+'</td><td class="avg-cell">'+(d.speed!=null?r2(d.speed).toFixed(3):'-')+'</td></tr>';});
+  tbl.innerHTML=h+'</tbody>';
+  showScreen('s-motion2');buildMotionCharts(data);
+  try{var unit=(ST.motion.realCm&&ST.motion.pixelLen)?'cm/s':'단위/s';callBackend('saveMotion',{maxSpeed:r2(maxS),avgSpeed:avgS,frameCount:data.length,realCm:ST.motion.realCm,pixelLen:ST.motion.pixelLen,unit:unit});}catch(e){}
+}
+function buildMotionCharts(data){
+  if(typeof Chart==='undefined'){setTimeout(function(){buildMotionCharts(data);},800);return;}
+  var labels=data.map(function(d){return r2(d.time).toFixed(2)+'s';});
+  destroyChart('cmspeed');
+  ST.charts.cmspeed=new Chart(get('c-mot-speed'),{type:'line',data:{labels:labels,datasets:[{label:'속력',data:data.map(function(d){return d.speed;}),borderColor:'rgba(125,186,104,.9)',backgroundColor:'rgba(154,203,135,.14)',fill:true,tension:.4,pointRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#5A6B85',font:{size:9},maxTicksLimit:10}},y:{ticks:{color:'#5A6B85',font:{size:9}}}}}});
+  destroyChart('cmpos');
+  ST.charts.cmpos=new Chart(get('c-mot-pos'),{type:'scatter',data:{datasets:[{label:'위치(x)',data:data.map(function(d){return{x:r2(d.time),y:r2(d.x)};}),borderColor:'rgba(91,141,239,1)',backgroundColor:'rgba(91,141,239,.6)',pointRadius:5},{label:'위치(y)',data:data.map(function(d){return{x:r2(d.time),y:r2(d.y)};}),borderColor:'rgba(167,139,216,.9)',backgroundColor:'rgba(167,139,216,.5)',pointRadius:5}]},options:{responsive:true,plugins:{legend:{display:true,labels:{color:'#5A6B85',font:{size:9}}}},scales:{x:{ticks:{color:'#5A6B85',font:{size:9}}},y:{ticks:{color:'#5A6B85',font:{size:9}}}}}});
+}
+function doMotPDF(){if(typeof html2pdf==='undefined'){toast('⏳ PDF 로딩 중');return;}showLoad('PDF 생성 중');html2pdf().set({margin:10,filename:'물체운동_탐구결과.pdf',image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(get('pdf-motion')).save().then(function(){hideLoad();toast('✅ 저장 완료');});}
+
+// ══ SOUND (주파수) ═══════════════════════════════════
+function resetSoundUI(){
+  ST.sound.log=[];renderSoundLog();
+  get('sound-freq').textContent='-';get('sound-note').textContent='-';
+  get('btn-sound-start').style.display='block';
+  get('btn-sound-capture').style.display='none';
+  get('btn-sound-stop').style.display='none';
+  get('btn-sound-save').disabled=true;
+}
+function freqToNote(freq){
+  if(!freq||freq<20)return '-';
+  var A4=440,noteNum=12*Math.log2(freq/A4)+69;
+  var noteNames=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  var rounded=Math.round(noteNum),idx=((rounded%12)+12)%12,octave=Math.floor(rounded/12)-1;
+  return noteNames[idx]+octave;
+}
+async function startSoundAnalysis(){
+  try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+      toast('❌ 마이크를 지원하지 않는 브라우저입니다. Chrome 또는 Safari를 사용하세요.',5000);return;
+    }
+    var stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    ST.sound.stream=stream;
+    var AC=window.AudioContext||window.webkitAudioContext;
+    ST.sound.audioCtx=new AC();
+    if(ST.sound.audioCtx.state==='suspended'){await ST.sound.audioCtx.resume();}
+    ST.sound.analyser=ST.sound.audioCtx.createAnalyser();
+    ST.sound.analyser.fftSize=4096;
+    ST.sound.analyser.smoothingTimeConstant=0.85;
+    ST.sound.mic=ST.sound.audioCtx.createMediaStreamSource(stream);
+    ST.sound.mic.connect(ST.sound.analyser);
+    get('btn-sound-start').style.display='none';
+    get('btn-sound-capture').style.display='block';
+    get('btn-sound-stop').style.display='block';
+    drawSpectrum();
+    toast('🎙️ 마이크 시작됨');
+  }catch(e){
+    var msg=e.message||String(e);
+    if(msg.indexOf('Permission')>=0||msg.indexOf('NotAllowed')>=0||e.name==='NotAllowedError'){
+      toast('❌ 마이크 권한이 거부되었습니다. 브라우저 주소창의 🔒 아이콘에서 마이크 권한을 "허용"으로 변경하세요.',6000);
+    } else if(e.name==='NotFoundError'){
+      toast('❌ 마이크가 연결되어 있지 않습니다.',5000);
+    } else {
+      toast('❌ 마이크 오류: '+msg,5000);
+    }
+  }
+}
+function drawSpectrum(){
+  if(!ST.sound.analyser)return;
+  var analyser=ST.sound.analyser,bufferLen=analyser.frequencyBinCount;
+  var dataArray=new Float32Array(bufferLen);analyser.getFloatFrequencyData(dataArray);
+  var sampleRate=ST.sound.audioCtx.sampleRate;
+  var minBin=Math.floor(50*analyser.fftSize/sampleRate);
+  var maxBin=Math.min(bufferLen-1,Math.floor(5000*analyser.fftSize/sampleRate));
+  var maxIdx=minBin,maxVal=-Infinity;
+  for(var i=minBin;i<=maxBin;i++){if(dataArray[i]>maxVal){maxVal=dataArray[i];maxIdx=i;}}
+  var peakFreq=maxIdx*sampleRate/analyser.fftSize;
+  if(maxVal>-80){
+    ST.sound.currentFreq=peakFreq;ST.sound.currentAmp=maxVal;
+    get('sound-freq').textContent=peakFreq.toFixed(1);
+    get('sound-note').textContent=freqToNote(peakFreq);
+  } else {
+    ST.sound.currentFreq=0;
+    get('sound-freq').textContent='--';get('sound-note').textContent='--';
+  }
+  var canvas=get('sound-canvas');
+  if(canvas){
+    if(canvas.width===0||canvas.width!==canvas.clientWidth){canvas.width=canvas.clientWidth;canvas.height=canvas.clientHeight;}
+    var ctx=canvas.getContext('2d');
+    ctx.fillStyle='rgba(167,139,216,.04)';ctx.fillRect(0,0,canvas.width,canvas.height);
+    var barW=canvas.width/(maxBin-minBin);
+    for(var j=minBin;j<=maxBin;j++){
+      var v=dataArray[j],h=Math.max(0,(v+100)*canvas.height/100);
+      var grad=ctx.createLinearGradient(0,canvas.height-h,0,canvas.height);
+      grad.addColorStop(0,'rgba(140,112,200,.9)');grad.addColorStop(1,'rgba(167,139,216,.5)');
+      ctx.fillStyle=grad;ctx.fillRect((j-minBin)*barW,canvas.height-h,Math.max(1,barW-0.3),h);
+    }
+    if(ST.sound.currentFreq>0){
+      var px=(maxIdx-minBin)*barW;
+      ctx.strokeStyle='rgba(245,163,140,.9)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,canvas.height);ctx.stroke();
+    }
+  }
+  ST.sound.animId=requestAnimationFrame(drawSpectrum);
+}
+function captureSoundValue(){
+  if(!ST.sound.currentFreq){toast('❗ 측정된 소리가 없습니다.');return;}
+  ST.sound.log.push({freq:r2(ST.sound.currentFreq),note:freqToNote(ST.sound.currentFreq),amp:r2(ST.sound.currentAmp),time:new Date()});
+  renderSoundLog();toast('📌 기록되었습니다');get('btn-sound-save').disabled=false;
+}
+function renderSoundLog(){
+  var el=get('sound-log');if(!el)return;
+  if(!ST.sound.log.length){el.innerHTML='<div class="sound-log-empty">아직 기록된 값이 없습니다.</div>';return;}
+  var h='';
+  ST.sound.log.forEach(function(item,i){h+='<div class="sound-log-row"><span class="sl-num">#'+(i+1)+'</span><span class="sl-freq">'+item.freq.toFixed(1)+' Hz</span><span class="sl-note">'+item.note+'</span><span style="color:var(--fog);font-size:.7rem;">'+item.amp.toFixed(0)+'dB</span></div>';});
+  el.innerHTML=h;
+}
+function stopSoundAnalysis(){
+  if(ST.sound.animId){cancelAnimationFrame(ST.sound.animId);ST.sound.animId=null;}
+  if(ST.sound.mic){try{ST.sound.mic.disconnect();}catch(e){}ST.sound.mic=null;}
+  if(ST.sound.stream){ST.sound.stream.getTracks().forEach(function(t){t.stop();});ST.sound.stream=null;}
+  if(ST.sound.audioCtx){try{ST.sound.audioCtx.close();}catch(e){}ST.sound.audioCtx=null;}
+  ST.sound.analyser=null;
+  get('btn-sound-start').style.display='block';
+  get('btn-sound-capture').style.display='none';
+  get('btn-sound-stop').style.display='none';
+  toast('⏸️ 측정 중지');
+}
+function saveSoundResults(){
+  if(!ST.sound.log.length){toast('❗ 기록된 값이 없습니다.');return;}
+  var src=get('sound-source').value||'';
+  showLoad('💾 시트에 저장 중...');
+  var last=ST.sound.log[ST.sound.log.length-1];
+  (async function(){
+    var res=await callBackend('saveSound',{source:src,frequency:last.freq,note:last.note,amplitude:last.amp,memo:'총 '+ST.sound.log.length+'개 측정'});
+    hideLoad();
+    if(res&&res.success)toast('✅ 저장 완료');
+    else toast('❌ 저장 실패: '+(res&&res.error||''),5000);
+  })();
+}
+
+// ══ COLOR ════════════════════════════════════════════
+function resetColorUI(){
+  ST.color={img:null,r:0,g:0,b:0,ph:'-',photoMethod:ST.color.photoMethod||'camera'};
+  get('color-canvas').style.display='none';
+  get('color-result').style.display='none';
+  get('color-hint').style.display='none';
+  get('color-upload-area').style.display='block';
+  var inp=get('color-file');if(inp)inp.value='';
+}
+function initColorUpload(){
+  var inp=get('color-file');if(!inp)return;
+  inp.addEventListener('change',function(e){
+    var file=e.target.files[0];if(!file)return;
+    var url=URL.createObjectURL(file);
+    var img=new Image();
+    img.onload=function(){
+      var canvas=get('color-canvas');
+      var maxW=Math.min(420,window.innerWidth-60);
+      var scale=Math.min(1,maxW/img.width);
+      canvas.width=img.width*scale;canvas.height=img.height*scale;
+      var ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      canvas.style.display='block';
+      get('color-hint').style.display='block';
+      get('color-upload-area').style.display='none';
+      ST.color.img=img;URL.revokeObjectURL(url);
+    };
+    img.src=url;
+  });
+  var canvas=get('color-canvas');
+  function pickColor(ev){
+    var rect=canvas.getBoundingClientRect();
+    var cx=ev.touches?ev.touches[0].clientX:ev.clientX;
+    var cy=ev.touches?ev.touches[0].clientY:ev.clientY;
+    var x=Math.round((cx-rect.left)*(canvas.width/rect.width));
+    var y=Math.round((cy-rect.top)*(canvas.height/rect.height));
+    if(x<0||y<0||x>=canvas.width||y>=canvas.height)return;
+    var ctx=canvas.getContext('2d');
+    var sx=Math.max(0,x-2),sy=Math.max(0,y-2),sw=Math.min(5,canvas.width-sx),sh=Math.min(5,canvas.height-sy);
+    var data=ctx.getImageData(sx,sy,sw,sh).data;
+    var r=0,g=0,b=0,n=data.length/4;
+    for(var i=0;i<data.length;i+=4){r+=data[i];g+=data[i+1];b+=data[i+2];}
+    r=Math.round(r/n);g=Math.round(g/n);b=Math.round(b/n);
+    showColorResult(r,g,b);
+    ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='#000';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.stroke();
+  }
+  canvas.addEventListener('click',pickColor);
+  canvas.addEventListener('touchstart',function(ev){ev.preventDefault();pickColor(ev);},{passive:false});
+}
+function rgbToHsl(r,g,b){
+  r/=255;g/=255;b/=255;
+  var max=Math.max(r,g,b),min=Math.min(r,g,b);
+  var h,s,l=(max+min)/2;
+  if(max===min){h=s=0;}
+  else{
+    var d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);
+    switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break;}
+    h/=6;
+  }
+  return [Math.round(h*360),Math.round(s*100),Math.round(l*100)];
+}
+function estimatePH(r,g,b){
+  var hsl=rgbToHsl(r,g,b),h=hsl[0],s=hsl[1],l=hsl[2];
+  if(s<15)return {text:'채도가 낮아 추정이 어렵습니다',value:7};
+  if(l<15||l>92)return {text:'명도가 극단적이라 추정이 어렵습니다',value:7};
+  if(h<15||h>345)return {text:'pH ≈ 1~3 (강산성)',value:2};
+  if(h<35)return {text:'pH ≈ 3~4 (산성)',value:3.5};
+  if(h<55)return {text:'pH ≈ 4~5 (약산성)',value:4.5};
+  if(h<75)return {text:'pH ≈ 5~6 (약산성)',value:5.5};
+  if(h<95)return {text:'pH ≈ 6~7 (중성에 가까움)',value:6.5};
+  if(h<150)return {text:'pH ≈ 7~8 (중성~약염기)',value:7.5};
+  if(h<195)return {text:'pH ≈ 8~9 (약염기성)',value:8.5};
+  if(h<240)return {text:'pH ≈ 9~11 (염기성)',value:10};
+  if(h<290)return {text:'pH ≈ 11~13 (강염기성)',value:12};
+  return {text:'pH ≈ 12~14 (강염기성)',value:13};
+}
+function showColorResult(r,g,b){
+  ST.color.r=r;ST.color.g=g;ST.color.b=b;
+  var hex='#'+[r,g,b].map(function(x){return x.toString(16).padStart(2,'0');}).join('').toUpperCase();
+  var hsl=rgbToHsl(r,g,b);
+  get('color-rgb').textContent='R:'+r+' G:'+g+' B:'+b;
+  get('color-hex').textContent=hex;
+  get('color-hsl').textContent='H:'+hsl[0]+'° S:'+hsl[1]+'% L:'+hsl[2]+'%';
+  get('color-swatch').style.backgroundColor=hex;
+  var ph=estimatePH(r,g,b);ST.color.ph=ph.text;
+  get('color-ph').textContent=ph.text;buildPHBar(ph.value);
+  get('color-result').style.display='block';
+}
+function buildPHBar(estimated){
+  var phColors=['#E83A3A','#E55A2B','#E88B30','#EAB72D','#E5DC2A','#A9D434','#5BC555','#3DB78E','#3795C9','#3E5DD8','#5D3DD0','#8E3DBE','#A93499','#B23474'];
+  var el=get('ph-bar'),mark=get('ph-marker');if(!el)return;
+  var h='';
+  for(var i=1;i<=14;i++){var c=phColors[i-1],isClose=Math.abs(i-estimated)<=0.5;h+='<div style="background:'+c+';'+(isClose?'border:2px solid #fff;font-size:.78rem;':'')+'">'+i+'</div>';}
+  el.innerHTML=h;if(mark)mark.textContent='추정 pH ≈ '+estimated;
+}
+function saveColorResults(){
+  if(!ST.color.r&&!ST.color.g&&!ST.color.b){toast('❗ 색을 먼저 분석하세요.');return;}
+  var sample=get('color-sample').value||'';
+  var hex='#'+[ST.color.r,ST.color.g,ST.color.b].map(function(x){return x.toString(16).padStart(2,'0');}).join('').toUpperCase();
+  var hsl=rgbToHsl(ST.color.r,ST.color.g,ST.color.b);
+  showLoad('💾 시트에 저장 중...');
+  (async function(){
+    var res=await callBackend('saveColor',{sample:sample,r:ST.color.r,g:ST.color.g,b:ST.color.b,hex:hex,hsl:'H:'+hsl[0]+' S:'+hsl[1]+' L:'+hsl[2],ph:ST.color.ph,memo:''});
+    hideLoad();
+    if(res&&res.success)toast('✅ 저장 완료');
+    else toast('❌ 저장 실패: '+(res&&res.error||''),5000);
+  })();
+}
+
+// ══ SOUND SPEED (소리의 속력) ════════════════════════
+function resetSSPUI(){
+  ST.ssp={audioCtx:null,stream:null,distance:0,temperature:20,deltaMs:0,speed:0,theory:0,err:0,recording:false};
+  get('ssp-delta').textContent='-';
+  get('ssp-speed').textContent='-';
+  get('ssp-result-detail').style.display='none';
+  get('btn-ssp-save').disabled=true;
+  var c=get('ssp-canvas');if(c){var ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);}
+}
+async function startSoundSpeedMeasure(){
+  var d=parseFloat(get('ssp-distance').value);
+  if(!d||d<3){toast('❗ 벽까지 거리(3m 이상)를 입력하세요.');return;}
+  ST.ssp.distance=d;
+  ST.ssp.temperature=parseFloat(get('ssp-temp').value)||20;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    toast('❌ 마이크를 지원하지 않는 브라우저입니다.',5000);return;
+  }
+  try{
+    var stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    ST.ssp.stream=stream;
+    var AC=window.AudioContext||window.webkitAudioContext;
+    var ctx=new AC();ST.ssp.audioCtx=ctx;
+    if(ctx.state==='suspended'){await ctx.resume();}
+    var src=ctx.createMediaStreamSource(stream);
+    var sr=ctx.sampleRate;
+    var recordDuration=1.2;
+    var bufferLen=Math.floor(sr*recordDuration);
+    var processor=ctx.createScriptProcessor(2048,1,1);
+    var recordedBuffer=new Float32Array(bufferLen);
+    var idx=0;
+    showLoad('🎙️ 녹음 중입니다. 박수를 한 번 강하게 쳐주세요!');
+    processor.onaudioprocess=function(e){
+      var input=e.inputBuffer.getChannelData(0);
+      for(var i=0;i<input.length&&idx<bufferLen;i++){recordedBuffer[idx++]=input[i];}
+      if(idx>=bufferLen){
+        processor.onaudioprocess=null;processor.disconnect();src.disconnect();
+        stream.getTracks().forEach(function(t){t.stop();});
+        try{ctx.close();}catch(e2){}
+        ST.ssp.audioCtx=null;ST.ssp.stream=null;
+        hideLoad();
+        analyzeSoundSpeedBuffer(recordedBuffer,sr);
+      }
+    };
+    src.connect(processor);processor.connect(ctx.destination);
+  }catch(e){
+    hideLoad();
+    var msg=e.message||String(e);
+    if(msg.indexOf('Permission')>=0||msg.indexOf('NotAllowed')>=0||e.name==='NotAllowedError'){
+      toast('❌ 마이크 권한이 거부되었습니다. 주소창 🔒 아이콘에서 권한을 허용하세요.',6000);
+    } else {
+      toast('❌ 마이크 오류: '+msg,5000);
+    }
+  }
+}
+function analyzeSoundSpeedBuffer(buffer,sampleRate){
+  // 1) 절댓값 (포락선 근사)
+  var n=buffer.length,env=new Float32Array(n);
+  var winSize=Math.floor(sampleRate*0.002); // 2ms 윈도우
+  for(var i=0;i<n;i++){
+    var s=0,c=0;
+    for(var j=-winSize;j<=winSize;j++){var k=i+j;if(k>=0&&k<n){s+=Math.abs(buffer[k]);c++;}}
+    env[i]=s/c;
+  }
+  // 2) 최댓값
+  var max=0;for(var i2=0;i2<n;i2++)if(env[i2]>max)max=env[i2];
+  if(max<0.02){toast('❌ 소리가 너무 작습니다. 다시 시도하세요.');return;}
+  // 3) 첫 번째 피크: max의 50% 이상 처음 도달
+  var thresh=max*0.5,firstPeak=-1;
+  for(var i3=0;i3<n;i3++){if(env[i3]>thresh){firstPeak=i3;break;}}
+  if(firstPeak<0){toast('❌ 직접음을 검출하지 못했습니다.');return;}
+  // 4) 메아리 검출: 첫 피크에서 충분히 떨어진 위치(최소 5ms 후)부터 다시 탐색
+  // 메아리는 직접음보다 작을 수 있어 임계를 max의 25%로 낮춤
+  var minGapSamples=Math.floor(sampleRate*0.015); // 5m 거리면 약 29ms이지만 안전하게 15ms 이후
+  // 직접음이 끝난 지점(envelope 다시 thresh 아래로 떨어진 후) 탐색
+  var directEnd=firstPeak;
+  for(var i4=firstPeak;i4<n;i4++){if(env[i4]<max*0.25){directEnd=i4;break;}}
+  var searchStart=Math.max(directEnd,firstPeak+minGapSamples);
+  var echoThresh=max*0.2;
+  var secondPeak=-1;
+  for(var i5=searchStart;i5<n;i5++){if(env[i5]>echoThresh){secondPeak=i5;break;}}
+  if(secondPeak<0){
+    toast('❌ 메아리를 검출하지 못했습니다. 더 멀리 떨어져 다시 시도해 보세요.');
+    drawSSPWaveform(env,firstPeak,-1,sampleRate);return;
+  }
+  var deltaSamples=secondPeak-firstPeak;
+  var deltaSec=deltaSamples/sampleRate;
+  var deltaMs=deltaSec*1000;
+  var speed=2*ST.ssp.distance/deltaSec;
+  var theory=331.5+0.6*ST.ssp.temperature;
+  var err=Math.abs((speed-theory)/theory)*100;
+  ST.ssp.deltaMs=deltaMs;ST.ssp.speed=speed;ST.ssp.theory=theory;ST.ssp.err=err;
+  // UI 업데이트
+  get('ssp-delta').textContent=deltaMs.toFixed(2);
+  get('ssp-speed').textContent=speed.toFixed(1);
+  get('ssp-speed-big').textContent=speed.toFixed(1);
+  get('ssp-theory').textContent=theory.toFixed(1);
+  get('ssp-error').textContent=err.toFixed(2);
+  var interp=get('ssp-interpret');
+  if(interp){
+    interp.innerHTML='<strong>분석 결과:</strong> 직접음과 메아리의 시간 차 Δt = '+deltaMs.toFixed(2)+' ms를 측정하였습니다. 벽까지의 거리 '+ST.ssp.distance+' m로부터 v = 2d/Δt = '+speed.toFixed(1)+' m/s를 얻었습니다. '+
+      '기온 '+ST.ssp.temperature+'℃에서의 이론값(331.5 + 0.6T) '+theory.toFixed(1)+' m/s와 비교하면 오차율은 '+err.toFixed(2)+'%입니다. '+
+      (err<5?'매우 정확한 측정입니다!':err<15?'양호한 측정 결과입니다.':'오차가 다소 크므로 거리를 더 정확히 측정하고 재시도해 보세요.');
+  }
+  get('ssp-result-detail').style.display='block';
+  get('btn-ssp-save').disabled=false;
+  drawSSPWaveform(env,firstPeak,secondPeak,sampleRate);
+}
+function drawSSPWaveform(env,p1,p2,sr){
+  var c=get('ssp-canvas');if(!c)return;
+  if(c.width===0||c.width!==c.clientWidth){c.width=c.clientWidth;c.height=c.clientHeight;}
+  var ctx=c.getContext('2d');
+  ctx.fillStyle='rgba(240,140,163,.04)';ctx.fillRect(0,0,c.width,c.height);
+  var n=env.length,max=0;for(var i=0;i<n;i++)if(env[i]>max)max=env[i];if(max<=0)return;
+  var stride=Math.max(1,Math.floor(n/c.width));
+  ctx.strokeStyle='rgba(167,139,216,.7)';ctx.lineWidth=1;ctx.beginPath();
+  for(var x=0;x<c.width;x++){
+    var idx=x*stride;if(idx>=n)break;
+    var v=env[idx]/max,y=c.height-v*(c.height-4)-2;
+    if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // 직접음, 메아리 표시
+  function markAt(sampleIdx,color,label){
+    if(sampleIdx<0)return;
+    var px=Math.round(sampleIdx/stride);
+    ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,c.height);ctx.stroke();
+    ctx.fillStyle=color;ctx.font='bold 11px sans-serif';ctx.fillText(label,Math.min(px+4,c.width-40),14);
+  }
+  markAt(p1,'rgba(91,141,239,.95)','직접음');
+  markAt(p2,'rgba(214,122,90,.95)','메아리');
+}
+function saveSSPResults(){
+  if(!ST.ssp.speed){toast('❗ 측정 결과가 없습니다.');return;}
+  showLoad('💾 시트에 저장 중...');
+  (async function(){
+    var res=await callBackend('saveSoundSpeed',{distance:ST.ssp.distance,deltaMs:r2(ST.ssp.deltaMs),measuredSpeed:r2(ST.ssp.speed),theoreticalSpeed:r2(ST.ssp.theory),errorPercent:r2(ST.ssp.err),temperature:ST.ssp.temperature,memo:''});
+    hideLoad();
+    if(res&&res.success)toast('✅ 저장 완료');
+    else toast('❌ 저장 실패: '+(res&&res.error||''),5000);
+  })();
+}
+
+// ══ ACCEL (가속도 센서) ══════════════════════════════
+function resetAccelUI(){
+  ST.accel={mode:'gravity',running:false,samples:[],handler:null,startTime:0,duration:10000,animId:null};
+  ['acc-x','acc-y','acc-z','acc-mag'].forEach(function(id){get(id).textContent='-';});
+  get('btn-acc-start').style.display='block';
+  get('btn-acc-stop').style.display='none';
+  get('btn-acc-save').style.display='none';
+  get('btn-acc-save').disabled=true;
+  get('acc-result-summary').style.display='none';
+  // 모드 버튼 선택
+  document.querySelectorAll('.acc-mode-btn').forEach(function(b){if(b.getAttribute('data-mode')==='gravity')b.classList.add('sel');else b.classList.remove('sel');});
+  var c=get('acc-canvas');if(c){var ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);}
+}
+function selectAccMode(mode){
+  ST.accel.mode=mode;
+  document.querySelectorAll('.acc-mode-btn').forEach(function(b){if(b.getAttribute('data-mode')===mode)b.classList.add('sel');else b.classList.remove('sel');});
+}
+async function startAccelMeasure(){
+  // iOS 권한 처리
+  if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function'){
+    try{
+      var resp=await DeviceMotionEvent.requestPermission();
+      if(resp!=='granted'){toast('❌ 가속도 센서 권한이 거부되었습니다.');return;}
+    }catch(e){toast('❌ 권한 요청 오류: '+e.message);return;}
+  }
+  if(typeof DeviceMotionEvent==='undefined'){toast('❌ 이 기기는 가속도 센서를 지원하지 않습니다.');return;}
+  ST.accel.running=true;ST.accel.samples=[];ST.accel.startTime=Date.now();
+  get('btn-acc-start').style.display='none';
+  get('btn-acc-stop').style.display='block';
+  get('acc-result-summary').style.display='none';
+  ST.accel.handler=function(ev){
+    if(!ST.accel.running)return;
+    // accelerationIncludingGravity 사용 (중력 포함). iOS·Android 모두 지원.
+    var a=ev.accelerationIncludingGravity;
+    if(!a||a.x==null)return;
+    var x=a.x||0,y=a.y||0,z=a.z||0;
+    var mag=Math.sqrt(x*x+y*y+z*z);
+    var t=(Date.now()-ST.accel.startTime)/1000;
+    ST.accel.samples.push({t:t,x:x,y:y,z:z,mag:mag});
+    // UI는 너무 자주 업데이트하지 않도록 매 5번째 샘플만
+    if(ST.accel.samples.length%3===0){
+      get('acc-x').textContent=x.toFixed(2);
+      get('acc-y').textContent=y.toFixed(2);
+      get('acc-z').textContent=z.toFixed(2);
+      get('acc-mag').textContent=mag.toFixed(2);
+    }
+  };
+  window.addEventListener('devicemotion',ST.accel.handler);
+  // 캔버스 그래프 실시간
+  drawAccelChart();
+  toast('▶️ 측정 시작 ('+modeDesc(ST.accel.mode)+')');
+}
+function modeDesc(m){return m==='gravity'?'중력 측정':m==='tilt'?'기울기 분해':'진동 분석';}
+function drawAccelChart(){
+  if(!ST.accel.running){return;}
+  var c=get('acc-canvas');if(!c){return;}
+  if(c.width===0||c.width!==c.clientWidth){c.width=c.clientWidth;c.height=c.clientHeight;}
+  var ctx=c.getContext('2d'),W=c.width,H=c.height;
+  ctx.fillStyle='rgba(91,141,239,.03)';ctx.fillRect(0,0,W,H);
+  var samples=ST.accel.samples;
+  if(samples.length<2){ST.accel.animId=requestAnimationFrame(drawAccelChart);return;}
+  // 최근 5초 데이터만 표시
+  var nowT=samples[samples.length-1].t;
+  var startT=Math.max(0,nowT-5);
+  var inRange=samples.filter(function(s){return s.t>=startT;});
+  if(inRange.length<2){ST.accel.animId=requestAnimationFrame(drawAccelChart);return;}
+  // y축 자동 스케일
+  var minY=-15,maxY=15;
+  inRange.forEach(function(s){if(s.x<minY)minY=s.x;if(s.y<minY)minY=s.y;if(s.z<minY)minY=s.z;if(s.x>maxY)maxY=s.x;if(s.y>maxY)maxY=s.y;if(s.z>maxY)maxY=s.z;if(s.mag>maxY)maxY=s.mag;});
+  var pad=2;minY-=pad;maxY+=pad;
+  // 0선
+  function yScale(v){return H-((v-minY)/(maxY-minY))*H;}
+  function xScale(t){return ((t-startT)/(nowT-startT||1))*W;}
+  // 0 기준선
+  ctx.strokeStyle='rgba(91,141,239,.15)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(0,yScale(0));ctx.lineTo(W,yScale(0));ctx.stroke();
+  // 9.8 기준선
+  ctx.strokeStyle='rgba(94,201,181,.3)';
+  ctx.beginPath();ctx.moveTo(0,yScale(9.8));ctx.lineTo(W,yScale(9.8));ctx.stroke();
+  ctx.setLineDash([]);
+  // x, y, z, mag 그리기
+  function drawLine(key,color){
+    ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath();
+    inRange.forEach(function(s,i){var px=xScale(s.t),py=yScale(s[key]);if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);});
+    ctx.stroke();
+  }
+  drawLine('x','rgba(91,141,239,.85)');
+  drawLine('y','rgba(167,139,216,.85)');
+  drawLine('z','rgba(125,186,104,.85)');
+  drawLine('mag','rgba(214,122,90,.9)');
+  // 범례
+  ctx.font='10px sans-serif';
+  ctx.fillStyle='rgba(91,141,239,1)';ctx.fillText('x',4,12);
+  ctx.fillStyle='rgba(167,139,216,1)';ctx.fillText('y',18,12);
+  ctx.fillStyle='rgba(125,186,104,1)';ctx.fillText('z',32,12);
+  ctx.fillStyle='rgba(214,122,90,1)';ctx.fillText('|a|',46,12);
+  ctx.fillStyle='rgba(94,201,181,.9)';ctx.fillText('9.8 m/s²',W-58,yScale(9.8)-3);
+  ST.accel.animId=requestAnimationFrame(drawAccelChart);
+}
+function stopAccelMeasure(){
+  ST.accel.running=false;
+  if(ST.accel.handler)window.removeEventListener('devicemotion',ST.accel.handler);
+  if(ST.accel.animId){cancelAnimationFrame(ST.accel.animId);ST.accel.animId=null;}
+  get('btn-acc-start').style.display='none';
+  get('btn-acc-stop').style.display='none';
+  get('btn-acc-save').style.display='block';
+  // 통계 계산
+  var samples=ST.accel.samples;
+  if(!samples.length){toast('❗ 측정된 데이터가 없습니다.');resetAccelUI();return;}
+  var sumX=0,sumY=0,sumZ=0,sumMag=0,maxMag=-Infinity,minMag=Infinity;
+  samples.forEach(function(s){sumX+=s.x;sumY+=s.y;sumZ+=s.z;sumMag+=s.mag;if(s.mag>maxMag)maxMag=s.mag;if(s.mag<minMag)minMag=s.mag;});
+  var n=samples.length;
+  var avgX=sumX/n,avgY=sumY/n,avgZ=sumZ/n,avgMag=sumMag/n;
+  var err=Math.abs((avgMag-9.80)/9.80*100);
+  ST.accel.result={avgMag:avgMag,avgX:avgX,avgY:avgY,avgZ:avgZ,maxMag:maxMag,minMag:minMag,err:err,n:n};
+  get('acc-avg-mag').textContent=avgMag.toFixed(3);
+  get('acc-err').textContent=err.toFixed(2);
+  var interp=get('acc-interpret');
+  if(interp){
+    var mode=ST.accel.mode,msg='';
+    if(mode==='gravity'){
+      msg='<strong>중력 측정 결과:</strong> 평균 가속도 크기 |a| = '+avgMag.toFixed(3)+' m/s²로, 표준 중력가속도 9.80 m/s²와 '+err.toFixed(2)+'%의 오차를 보입니다. ';
+      msg+=err<3?'매우 정확한 측정입니다. 폰을 잘 고정한 상태였군요!':err<10?'양호합니다. 폰이 약간 움직였을 수 있습니다.':'오차가 큽니다. 폰을 평평하고 정지된 곳에 두고 다시 측정해 보세요.';
+    } else if(mode==='tilt'){
+      msg='<strong>기울기 분해 결과:</strong> x = '+avgX.toFixed(2)+', y = '+avgY.toFixed(2)+', z = '+avgZ.toFixed(2)+' (m/s²). ';
+      msg+='각 축의 평균값을 보면 중력이 어떻게 분해되고 있는지 알 수 있습니다. ';
+      msg+='예: z축이 9.8에 가까우면 폰이 수평, x축이 9.8에 가까우면 폰이 옆으로 세워진 상태입니다. ';
+      msg+='기울기 각도 θ는 sin⁻¹(가로 성분/9.8)로 계산할 수 있습니다.';
+    } else {
+      msg='<strong>진동 분석 결과:</strong> 평균 |a| = '+avgMag.toFixed(2)+' m/s², 최댓값 '+maxMag.toFixed(2)+', 최솟값 '+minMag.toFixed(2)+' m/s². ';
+      msg+='최댓값과 최솟값의 차이가 클수록 강한 진동이 발생했음을 의미합니다. ';
+      msg+='진폭(최댓값 - 9.8 또는 9.8 - 최솟값)을 통해 진동의 세기를 정량화할 수 있습니다.';
+    }
+    interp.innerHTML=msg;
+  }
+  get('acc-result-summary').style.display='block';
+  get('btn-acc-save').disabled=false;
+}
+function saveAccelResults(){
+  var r=ST.accel.result;if(!r){toast('❗ 측정 결과가 없습니다.');return;}
+  showLoad('💾 시트에 저장 중...');
+  (async function(){
+    var res=await callBackend('saveAccel',{mode:modeDesc(ST.accel.mode),avgMag:r2(r.avgMag),errorPercent:r2(r.err),avgX:r2(r.avgX),avgY:r2(r.avgY),avgZ:r2(r.avgZ),maxVal:r2(r.maxMag),minVal:r2(r.minMag),memo:'샘플 수 '+r.n});
+    hideLoad();
+    if(res&&res.success)toast('✅ 저장 완료');
+    else toast('❌ 저장 실패: '+(res&&res.error||''),5000);
+  })();
+}
+
+// ══ BIND ALL ══════════════════════════════════════════
+function bindAll(){
+  var e;
+  // HOME
+  e=get('btn-go-light');     if(e)e.addEventListener('click',goToLight);
+  e=get('btn-go-pressure');  if(e)e.addEventListener('click',goToPressure);
+  e=get('btn-go-pend');      if(e)e.addEventListener('click',function(){goToPend();initPendVideoUpload();});
+  e=get('btn-go-motion');    if(e)e.addEventListener('click',function(){goToMotion();initMotVideoUpload();});
+  e=get('btn-go-sound');     if(e)e.addEventListener('click',goToSound);
+  e=get('btn-go-color');     if(e)e.addEventListener('click',function(){goToColor();initColorUpload();});
+  e=get('btn-go-soundspeed');if(e)e.addEventListener('click',goToSoundSpeed);
+  e=get('btn-go-accel');     if(e)e.addEventListener('click',goToAccel);
+  // LIGHT
+  e=get('l1-back');   if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('l1-next');   if(e)e.addEventListener('click',doL1Next);
+  e=get('l1-home');   if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('oc-default');if(e)e.addEventListener('click',function(){selectMode('default');});
+  e=get('oc-custom'); if(e)e.addEventListener('click',function(){selectMode('custom');});
+  e=get('pm-camera'); if(e)e.addEventListener('click',function(){selectPhotoMethod('camera');});
+  e=get('pm-gallery');if(e)e.addEventListener('click',function(){selectPhotoMethod('gallery');});
+  e=get('l2-back');    if(e)e.addEventListener('click',function(){showScreen('s-l1');});
+  e=get('l2-home');    if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('btn-analyze');if(e)e.addEventListener('click',doAnalyze);
+  e=get('l3-back');       if(e)e.addEventListener('click',function(){showScreen('s-l2');});
+  e=get('btn-light-pdf'); if(e)e.addEventListener('click',doLightPDF);
+  e=get('btn-light-home');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  // PRESSURE
+  e=get('p1-back');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('p1-next');if(e)e.addEventListener('click',doP1Next);
+  e=get('p1-home');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  document.querySelectorAll('#count-btns .count-btn').forEach(function(b){b.addEventListener('click',function(){selectCount(parseInt(b.getAttribute('data-n')));});});
+  e=get('p2-back'); if(e)e.addEventListener('click',function(){showScreen('s-p1');});
+  e=get('p2-home'); if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('btn-calc');if(e)e.addEventListener('click',doCalc);
+  e=get('p3-back');   if(e)e.addEventListener('click',function(){showScreen('s-p2');});
+  e=get('btn-p-pdf'); if(e)e.addEventListener('click',doPPDF);
+  e=get('btn-p-home');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  // PENDULUM
+  e=get('pend1-back'); if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('pend1-home'); if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('btn-pend-analyze');if(e)e.addEventListener('click',doPendAnalyze);
+  e=get('pend2-back'); if(e)e.addEventListener('click',function(){showScreen('s-pend1');});
+  e=get('btn-pend-pdf');if(e)e.addEventListener('click',doPendPDF);
+  e=get('btn-pend-home');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('pend-pm-camera');if(e)e.addEventListener('click',function(){selectPendPhotoMethod('camera');});
+  e=get('pend-pm-gallery');if(e)e.addEventListener('click',function(){selectPendPhotoMethod('gallery');});
+  document.querySelectorAll('.pend-frame-btn').forEach(function(b){b.addEventListener('click',function(){setPendFrameCount(parseInt(b.getAttribute('data-n')));});});
+  // MOTION
+  e=get('mot1-back');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('mot1-home');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('btn-mot-analyze');if(e)e.addEventListener('click',doMotAnalyze);
+  e=get('mot2-back');if(e)e.addEventListener('click',function(){showScreen('s-motion1');});
+  e=get('btn-mot-pdf');if(e)e.addEventListener('click',doMotPDF);
+  e=get('btn-mot-home');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('mot-pm-camera');if(e)e.addEventListener('click',function(){selectMotPhotoMethod('camera');});
+  e=get('mot-pm-gallery');if(e)e.addEventListener('click',function(){selectMotPhotoMethod('gallery');});
+  document.querySelectorAll('.mot-frame-btn').forEach(function(b){b.addEventListener('click',function(){setMotFrameCount(parseInt(b.getAttribute('data-n')));});});
+  // SOUND
+  e=get('sound1-back');if(e)e.addEventListener('click',function(){stopSoundAnalysis();showScreen('s-home');});
+  e=get('sound1-home');if(e)e.addEventListener('click',function(){stopSoundAnalysis();showScreen('s-home');});
+  e=get('btn-sound-start');  if(e)e.addEventListener('click',startSoundAnalysis);
+  e=get('btn-sound-capture');if(e)e.addEventListener('click',captureSoundValue);
+  e=get('btn-sound-stop');   if(e)e.addEventListener('click',stopSoundAnalysis);
+  e=get('btn-sound-save');   if(e)e.addEventListener('click',saveSoundResults);
+  // COLOR
+  e=get('color1-back');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('color1-home');if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('color-pm-camera'); if(e)e.addEventListener('click',function(){selectColorPhotoMethod('camera');});
+  e=get('color-pm-gallery');if(e)e.addEventListener('click',function(){selectColorPhotoMethod('gallery');});
+  e=get('btn-color-save');  if(e)e.addEventListener('click',saveColorResults);
+  // SOUND SPEED (NEW)
+  e=get('ssp1-back'); if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('ssp1-home'); if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('btn-ssp-start');if(e)e.addEventListener('click',startSoundSpeedMeasure);
+  e=get('btn-ssp-save'); if(e)e.addEventListener('click',saveSSPResults);
+  // ACCEL (NEW)
+  e=get('acc1-back'); if(e)e.addEventListener('click',function(){if(ST.accel.running)stopAccelMeasure();showScreen('s-home');});
+  e=get('acc1-home'); if(e)e.addEventListener('click',function(){if(ST.accel.running)stopAccelMeasure();showScreen('s-home');});
+  e=get('btn-acc-start');if(e)e.addEventListener('click',startAccelMeasure);
+  e=get('btn-acc-stop'); if(e)e.addEventListener('click',stopAccelMeasure);
+  e=get('btn-acc-save'); if(e)e.addEventListener('click',saveAccelResults);
+  document.querySelectorAll('.acc-mode-btn').forEach(function(b){b.addEventListener('click',function(){selectAccMode(b.getAttribute('data-mode'));});});
+  // ═══ 설정 화면 핸들러 ═══
+  e=get('btn-settings');     if(e)e.addEventListener('click',function(){openConfigScreen();});
+  e=get('btn-config-open');  if(e)e.addEventListener('click',function(){openConfigScreen();});
+  e=get('cfg-back');         if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('cfg-home');         if(e)e.addEventListener('click',function(){showScreen('s-home');});
+  e=get('btn-cfg-save');     if(e)e.addEventListener('click',saveConfig);
+  e=get('btn-cfg-clear');    if(e)e.addEventListener('click',clearConfig);
+  e=get('btn-cfg-test');     if(e)e.addEventListener('click',testBackend);
+
+  // ═══ 설정 미완료 시 홈에 경고 배너 표시 ═══
+  updateConfigWarning();
+
+  // 초기 설정
+  selectCount(5);
+  console.log('✅ 과학 탐구 앱 v4 초기화 완료 (GitHub Pages 모드)');
+}
+
+// ══ CONFIG 화면 관련 함수 ════════════════════════════
+function openConfigScreen(){
+  showScreen('s-config');
+  get('cfg-api-key').value=CFG.apiKey;
+  get('cfg-backend-url').value=CFG.backendUrl;
+}
+function saveConfig(){
+  var apiKey=get('cfg-api-key').value.trim();
+  var backendUrl=get('cfg-backend-url').value.trim();
+  if(!apiKey){toast('❗ API 키를 입력하세요.');return;}
+  if(!backendUrl){toast('❗ 백엔드 URL을 입력하세요.');return;}
+  if(backendUrl.indexOf('https://script.google.com')!==0){toast('❗ 백엔드 URL은 script.google.com으로 시작해야 합니다.',5000);return;}
+  if(CFG.save(apiKey,backendUrl)){
+    toast('✅ 설정이 저장되었습니다.');
+    updateConfigWarning();
+    setTimeout(function(){showScreen('s-home');},800);
+  } else {
+    toast('❌ 저장 실패. 브라우저의 localStorage를 사용할 수 없는 환경일 수 있습니다.',5000);
+  }
+}
+function clearConfig(){
+  if(!confirm('저장된 API 키와 백엔드 URL을 삭제하시겠습니까?'))return;
+  CFG.clear();
+  get('cfg-api-key').value='';
+  get('cfg-backend-url').value='';
+  updateConfigWarning();
+  toast('🗑️ 설정이 삭제되었습니다.');
+}
+async function testBackend(){
+  var url=get('cfg-backend-url').value.trim();
+  if(!url){toast('❗ 백엔드 URL을 입력하세요.');return;}
+  if(url.indexOf('https://script.google.com')!==0){toast('❗ 올바른 Apps Script URL이 아닙니다.',5000);return;}
+  showLoad('🔌 백엔드 연결 테스트 중...');
+  try{
+    var res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'ping'}),redirect:'follow'});
+    var data=await res.json();
+    hideLoad();
+    if(data&&data.success)toast('✅ 백엔드 연결 성공!');
+    else toast('❌ 응답 오류: '+(data&&data.error||'알 수 없음'),5000);
+  }catch(e){
+    hideLoad();
+    toast('❌ 연결 실패: '+(e.message||e)+'\n배포 권한이 "모든 사용자"인지 확인하세요.',6000);
+  }
+}
+function updateConfigWarning(){
+  var warn=get('config-warning');
+  if(!warn)return;
+  warn.style.display=CFG.isValid()?'none':'block';
+}
+
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',bindAll);}else{bindAll();}
+</script>
+</body>
+</html>
